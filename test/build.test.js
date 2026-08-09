@@ -35,8 +35,7 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
   assert.match(demo, /url\("\.\/test-background\.svg"\)/);
   assert.doesNotMatch(demo, /src="\/test-background\.svg|url\(["']?\/test-background\.svg/);
   assert.equal((demo.match(/src="\.\/test-background\.svg"/g) || []).length, 5);
-  assert.match(demo, /#method-12::selection,\s*#method-12 \*::selection/);
-  assert.match(demo, /#method-12 \*::selection \{ color: #17211b !important; background-color: #fffaf0 !important; \}/);
+  assert.match(demo, /#method-12 :not\(input\):not\(textarea\)::selection \{ color: inherit !important; background: transparent !important; \}/);
   assert.doesNotMatch(demo, /id="method-12"[\s\S]*?<div class="target no-select">/);
   assert.match(demo, /Dark Reader 等色彩擴充可能干擾此項/);
 });
