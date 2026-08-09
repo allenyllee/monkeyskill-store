@@ -130,8 +130,8 @@
 
       <section class="case" id="method-12">
         <div class="number">12</div>
-        <div class="description"><h2>Invisible selection</h2><p>user-select:none，且 ::selection 使用與文字區相同的顏色</p><span class="mode absolute">Absolute</span></div>
-        <div class="fixture"><div class="target no-select"><span>未安裝時無法反白；Absolute 應恢復選取與可見底色。</span></div><p id="result-12" class="result">拖曳選取並觀察反白底色。</p></div>
+        <div class="description"><h2>Invisible selection</h2><p>仍可選取，但 ::selection 使用與文字區相同的顏色</p><span class="mode absolute">Absolute</span></div>
+        <div class="fixture"><div class="target"><span>未安裝時不應看到反白底色；Absolute 應恢復可見底色。</span></div><p id="result-12" class="result">拖曳選取並觀察反白底色；Dark Reader 等色彩擴充可能干擾此項。</p></div>
       </section>
 
       <section class="case" id="method-13">
