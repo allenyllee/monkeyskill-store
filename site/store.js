@@ -99,6 +99,14 @@ function renderCatalog() {
     const button = card.querySelector(".install");
     button.textContent = installed.has(skill.id) ? "重新生成" : "使用 MonkeySkill 安裝";
     button.addEventListener("click", () => beginInstall(skill));
+    const demo = card.querySelector(".demo");
+    if (skill.demoUrl) {
+      const demoUrl = new URL(skill.demoUrl, location.href);
+      if (demoUrl.origin === location.origin) {
+        demo.href = demoUrl.href;
+        demo.hidden = false;
+      }
+    }
     catalog.append(card);
   }
 }

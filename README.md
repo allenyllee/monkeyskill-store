@@ -8,10 +8,11 @@ The Store contains specifications, not generated JavaScript. The Extension sends
 
 1. Fork this repository.
 2. Add `skills/<skill-id>/skill.json` and `skills/<skill-id>/SKILL.md`.
+   A functional demo may live beside them at `skills/<skill-id>/demo/index.html`; declare it as `"demo": "demo/index.html"` in `skill.json`.
 3. Run `npm test` and `npm run build`.
 4. Open a pull request.
 
-The build rejects extra files inside a Skill directory, executable snippets in `SKILL.md`, missing criteria, unsafe IDs, and unsupported catalog metadata.
+The build rejects extra files inside a Skill directory, executable snippets in `SKILL.md`, missing criteria, unsafe IDs, unsupported catalog metadata, and demo assets containing network, storage, opener, iframe, or Extension APIs. Demo content is published for people to try but is never sent to the Builder or Tester.
 
 ## Local development
 

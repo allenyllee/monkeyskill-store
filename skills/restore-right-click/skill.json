@@ -7,5 +7,6 @@
   "capabilities": ["dom", "events", "styles"],
   "forbiddenCapabilities": ["network", "cookies", "history", "downloads"],
   "modes": ["standard", "absolute"],
-  "entrypoint": "SKILL.md"
+  "entrypoint": "SKILL.md",
+  "demo": "demo/index.html"
 }
