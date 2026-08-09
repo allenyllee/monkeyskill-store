@@ -37,8 +37,11 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
 
 test("Store actively probes the Extension bridge instead of relying on a one-shot ready event", async () => {
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  const page = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
   assert.match(source, /void probeExtension\(\)/);
   assert.match(source, /rpc\("ping", null, \{\}, 500\)/);
   assert.match(source, /function markExtensionReady\(\)/);
   assert.match(source, /90 \* 60 \* 1000/);
+  assert.match(page, /store\.js\?v=\d+/);
+  assert.match(page, /store\.css\?v=\d+/);
 });
