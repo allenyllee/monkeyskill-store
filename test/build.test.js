@@ -35,6 +35,8 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
   assert.match(demo, /url\("\.\/test-background\.svg"\)/);
   assert.doesNotMatch(demo, /src="\/test-background\.svg|url\(["']?\/test-background\.svg/);
   assert.equal((demo.match(/src="\.\/test-background\.svg"/g) || []).length, 5);
+  assert.match(demo, /#method-12::selection,\s*#method-12 \*::selection/);
+  assert.match(demo, /#method-12 \*::selection \{ color: #17211b !important; background-color: #fffaf0 !important; \}/);
 });
 
 test("Store actively probes the Extension bridge instead of relying on a one-shot ready event", async () => {
