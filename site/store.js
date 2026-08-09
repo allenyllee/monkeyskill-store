@@ -18,10 +18,7 @@ window.addEventListener("message", event => {
   const message = event.data;
   if (event.source !== window || event.origin !== location.origin || message?.source !== "monkeyskill-extension") return;
   if (message.type === "ready") {
-    extensionReady = true;
-    connection.textContent = "Extension connected";
-    connection.classList.add("ready");
-    void refreshInstalled();
+    markExtensionReady();
     return;
   }
   const request = pendingRequests.get(message.requestId);
@@ -31,7 +28,27 @@ window.addEventListener("message", event => {
   request.resolve(message.response);
 });
 
+void probeExtension();
 void initialize();
+
+async function probeExtension() {
+  for (const delay of [0, 300, 900]) {
+    if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+    if (extensionReady) return;
+    try {
+      const response = await rpc("ping", null, {}, 500);
+      if (response?.ok) return markExtensionReady();
+    } catch {}
+  }
+}
+
+function markExtensionReady() {
+  if (extensionReady) return;
+  extensionReady = true;
+  connection.textContent = "Extension connected";
+  connection.classList.add("ready");
+  void refreshInstalled();
+}
 
 async function initialize() {
   try {
@@ -43,7 +60,7 @@ async function initialize() {
     renderCatalog();
     setTimeout(() => {
       if (!extensionReady) connection.textContent = "MonkeySkill Extension not detected";
-    }, 1200);
+    }, 2400);
   } catch (error) {
     showNotice(error.message, true);
   }

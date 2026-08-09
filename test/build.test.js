@@ -20,3 +20,10 @@ test("published catalog contains no generated Build or TestSpec fields", async (
   const catalog = await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8");
   assert.doesNotMatch(catalog, /artifactType|testSpec|selfTests|javascript/i);
 });
+
+test("Store actively probes the Extension bridge instead of relying on a one-shot ready event", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /void probeExtension\(\)/);
+  assert.match(source, /rpc\("ping", null, \{\}, 500\)/);
+  assert.match(source, /function markExtensionReady\(\)/);
+});
