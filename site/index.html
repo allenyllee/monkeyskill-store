@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A community catalog of human-readable MSkills for the MonkeySkill Chrome extension.">
+    <title>MonkeySkill Store</title>
+    <link rel="stylesheet" href="store.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./"><span aria-hidden="true">M</span> MonkeySkill Store</a>
+      <span id="connection" class="connection">Connecting to Extension…</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">INSTALL ABILITIES, NOT EXTENSIONS</p>
+        <h1>需要的功能，<br>現在才生成。</h1>
+        <p>這個 Store 只發布人類可讀的 MSkill 規格。MonkeySkill Extension 會使用你的 LLM 生成 Build，通過公開與獨立測試後，再請你核准安裝。</p>
+      </section>
+
+      <section aria-labelledby="catalog-title">
+        <div class="catalog-heading">
+          <div><p class="eyebrow">COMMUNITY CATALOG</p><h2 id="catalog-title">可用的 MSkills</h2></div>
+          <span id="count">0 MSKILLS</span>
+        </div>
+        <p id="notice" class="notice" hidden></p>
+        <div id="catalog" class="catalog" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <template id="skill-template">
+      <article class="skill-card">
+        <div class="skill-meta"><span class="badge">Available</span><span class="version"></span></div>
+        <h3></h3>
+        <p class="description"></p>
+        <div class="modes" aria-label="Modes"></div>
+        <p class="skill-status"></p>
+        <button class="install" type="button">使用 MonkeySkill 安裝</button>
+      </article>
+    </template>
+
+    <dialog id="decision-dialog">
+      <form method="dialog">
+        <p id="dialog-eyebrow" class="eyebrow"></p>
+        <h2 id="dialog-title"></h2>
+        <p id="dialog-copy"></p>
+        <pre id="dialog-details" hidden></pre>
+        <div class="dialog-actions">
+          <button value="cancel">取消</button>
+          <button id="dialog-confirm" class="primary" value="confirm">確認</button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer>
+      <a href="https://github.com/allenyllee/monkeyskill-store">GitHub、投稿與 Fork</a>
+      <span>Store 不包含生成的 JavaScript。</span>
+    </footer>
+    <script type="module" src="store.js"></script>
+  </body>
+</html>
