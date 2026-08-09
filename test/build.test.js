@@ -33,6 +33,8 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
   assert.match(demo, /removeAllRanges/);
   assert.match(demo, /event\.key\.toLowerCase\(\) !== "c"/);
   assert.match(demo, /url\("\.\/test-background\.svg"\)/);
+  assert.doesNotMatch(demo, /src="\/test-background\.svg|url\(["']?\/test-background\.svg/);
+  assert.equal((demo.match(/src="\.\/test-background\.svg"/g) || []).length, 5);
 });
 
 test("Store actively probes the Extension bridge instead of relying on a one-shot ready event", async () => {
