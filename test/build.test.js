@@ -49,3 +49,10 @@ test("Store actively probes the Extension bridge instead of relying on a one-sho
   assert.match(page, /store\.js\?v=\d+/);
   assert.match(page, /store\.css\?v=\d+/);
 });
+
+test("local Store server sends browser-safe image MIME types", async () => {
+  const source = await readFile(new URL("../scripts/serve.mjs", import.meta.url), "utf8");
+  assert.match(source, /\["\.svg", "image\/svg\+xml"\]/);
+  assert.match(source, /\["\.png", "image\/png"\]/);
+  assert.match(source, /\["\.webp", "image\/webp"\]/);
+});
