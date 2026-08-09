@@ -26,4 +26,5 @@ test("Store actively probes the Extension bridge instead of relying on a one-sho
   assert.match(source, /void probeExtension\(\)/);
   assert.match(source, /rpc\("ping", null, \{\}, 500\)/);
   assert.match(source, /function markExtensionReady\(\)/);
+  assert.match(source, /90 \* 60 \* 1000/);
 });

@@ -190,7 +190,7 @@ async function restoreWorkflow() {
 }
 
 async function waitForGeneration(skillId) {
-  const deadline = Date.now() + 21 * 60 * 1000;
+  const deadline = Date.now() + 90 * 60 * 1000;
   while (Date.now() < deadline) {
     const response = await rpc("status", skillId);
     if (!response.ok) throw new Error(response.error);
