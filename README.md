@@ -13,8 +13,9 @@ self-contained Demo that reproduces a real browser problem, then write the small
 human-readable criteria supported by that evidence. Independent Tester treats the MSkill as
 untrusted input and must return `allow`, `reject`, or `unverifiable` before Builder runs. A
 `reject` or `unverifiable` verdict stops immediately. Only after `allow`, an isolated Attacker
-creates a bounded non-executable poisoned variant and a fresh Tester reviews it. Builder runs only
-when that poisoned variant is `reject`. Builder and the original Tester then independently produce TestSpecs in the same constrained DSL; the
+selects allowlisted template dimensions; trusted Extension code creates a varied, non-executable,
+known-reject canary and a fresh Tester reviews it. Builder runs only when that poisoned variant is
+`reject`. Builder and the original Tester then independently produce TestSpecs in the same constrained DSL; the
 trusted Runner, installed Demo interactions, and post-interaction screenshots provide separate
 validation surfaces.
 
