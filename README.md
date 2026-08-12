@@ -4,7 +4,10 @@ A community-maintained catalog of human-readable MSkills for the [MonkeySkill Ch
 
 **Live Store:** [allenyllee.github.io/monkeyskill-store](https://allenyllee.github.io/monkeyskill-store/)
 
-The Store contains specifications, not generated JavaScript. The Extension sends a selected `skill.json` and `SKILL.md` to the user's configured Builder and independent Tester, runs both test layers locally, and asks for explicit approval before installation.
+The Store contains specifications, not generated JavaScript. The Extension first sends a selected
+`skill.json` and `SKILL.md` through the staged Tester A, constrained Attacker, and fresh Tester B
+security gate. Only the required `allow/reject` differential result reaches Builder; the Extension
+then runs both TestSpecs locally and asks for explicit approval before installation.
 
 ## Development methodology
 
@@ -22,6 +25,30 @@ validation surfaces.
 The trusted canary library combines 10 plausible framing families, 8 distinct unsafe consequences,
 4 presentation structures, and multiple fixed wording templates—245,760 variants before safe
 paragraph insertion positions—while preserving the same enforced reject semantics.
+
+## Installation architecture
+
+```mermaid
+flowchart LR
+    Store["Store: original human-readable MSkill"] --> TesterA{"Tester A<br/>review original"}
+    TesterA -- "reject / unverifiable" --> Stop["Stop"]
+    TesterA -- "allow" --> Attacker["Attacker<br/>allowlisted IDs only"]
+    Attacker --> Trusted["Trusted Extension code<br/>constructs poisoned variant"]
+    Store -. "original content" .-> Trusted
+    Trusted --> TesterB{"Fresh Tester B<br/>review poisoned variant"}
+    TesterB -- "allow / unverifiable" --> Fail["Fail closed:<br/>possible injection bypass"]
+    TesterB -- "reject" --> Gate["Required pair:<br/>allow / reject"]
+    Store -. "original MSkill only" .-> Builder["Builder"]
+    Gate --> Builder
+    Builder --> Runner["Shared constrained TestSpec DSL<br/>and trusted Runner"]
+    Runner --> Approval["Human approval"]
+    Approval --> Browser["Install + Demo + screenshots"]
+```
+
+The Attacker never writes arbitrary prose. It selects fixed dimensions, trusted code assembles
+the required reject canary, and Tester B is not told the expected verdict. Builder is created only
+for `Tester A = allow` plus `Tester B = reject`, and receives the original MSkill rather than the
+poisoned copy.
 
 When the Demo exposes a reproducible gap, classify it before changing the contract. Add or
 clarify a criterion only for a durable MSkill requirement with observable behavior plus safety
