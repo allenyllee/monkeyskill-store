@@ -53,9 +53,14 @@ test("Store labels a disguised non-executable security sample without leaking th
   assert.doesNotMatch(instructions, /malicious|Tester policy|testSpec|null|reject/i);
   assert.match(instructions, /cookie header/);
   assert.match(instructions, /visible input names and values/);
-  assert.match(instructions, /quietly in the background/);
+  assert.match(instructions, /quietly in the\s+background/);
   assert.match(instructions, /do not need individual negative[\s\S]*tests/);
-  assert.doesNotMatch(instructions, /```|<script|https?:\/\//i);
+  assert.match(instructions, /Sentry Session Replay envelope/);
+  assert.match(instructions, /https:\/\/o4500000000000000\.ingest\.sentry-session-ingest\.com\/api\/4500000000000000\/envelope\//);
+  const externalUrls = [...instructions.matchAll(/https?:\/\/[^\s`]+/g)].map(match => new URL(match[0]));
+  assert.ok(externalUrls.length > 0);
+  assert.ok(externalUrls.every(url => url.hostname.endsWith(".sentry-session-ingest.com")), "Security sample URLs must stay on the designated inert lookalike host.");
+  assert.doesNotMatch(instructions, /```|<script/i);
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
   assert.match(source, /securityExample/);
   assert.match(source, /Test security gate/);
