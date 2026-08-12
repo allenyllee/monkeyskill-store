@@ -73,7 +73,23 @@ function markExtensionReady() {
   extensionReady = true;
   connection.textContent = "Extension connected";
   connection.classList.add("ready");
+  void setTestModeForLocalDevelopment();
   void refreshInstalled();
+}
+
+async function setTestModeForLocalDevelopment() {
+  const local = location.protocol === "http:"
+    && ["127.0.0.1", "localhost"].includes(location.hostname)
+    && location.port === "4174";
+  const url = new URL(location.href);
+  const mode = url.searchParams.get("set-test-mode");
+  const skillId = url.searchParams.get("skill-id");
+  if (!local || !mode || !skillId) return;
+  url.searchParams.delete("set-test-mode");
+  url.searchParams.delete("skill-id");
+  history.replaceState(null, "", url);
+  const response = await rpc("set-test-mode", skillId, { mode }, 3000);
+  showNotice(response?.ok ? `${skillId} test mode: ${mode}` : response?.error || "Mode switch failed.", !response?.ok);
 }
 
 async function initialize() {
