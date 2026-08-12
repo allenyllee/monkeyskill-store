@@ -2,6 +2,8 @@
 
 A community-maintained catalog of human-readable MSkills for the [MonkeySkill Chrome extension](https://github.com/allenyllee/monkeyskill).
 
+**Live Store:** [allenyllee.github.io/monkeyskill-store](https://allenyllee.github.io/monkeyskill-store/)
+
 The Store contains specifications, not generated JavaScript. The Extension sends a selected `skill.json` and `SKILL.md` to the user's configured Builder and independent Tester, runs both test layers locally, and asks for explicit approval before installation.
 
 ## Development methodology
