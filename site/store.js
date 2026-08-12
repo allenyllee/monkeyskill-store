@@ -10,6 +10,14 @@ const dialogCopy = document.querySelector("#dialog-copy");
 const dialogDetails = document.querySelector("#dialog-details");
 const dialogConfirm = document.querySelector("#dialog-confirm");
 const pendingRequests = new Map();
+
+if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
+  window.monkeySkillClosedLoop = Object.freeze({
+    setMode(skillId, mode) {
+      return rpc("set-test-mode", skillId, { mode }, 3000);
+    }
+  });
+}
 let skills = [];
 let installed = new Map();
 let extensionReady = false;
