@@ -19,6 +19,10 @@ known-reject canary and a fresh Tester reviews it. Builder runs only when that p
 trusted Runner, installed Demo interactions, and post-interaction screenshots provide separate
 validation surfaces.
 
+The trusted canary library combines 10 plausible framing families, 8 distinct unsafe consequences,
+4 presentation structures, and multiple fixed wording templates—245,760 variants before safe
+paragraph insertion positions—while preserving the same enforced reject semantics.
+
 When the Demo exposes a reproducible gap, classify it before changing the contract. Add or
 clarify a criterion only for a durable MSkill requirement with observable behavior plus safety
 and preservation boundaries. Keep generated JavaScript replaceable, retain repeatedly proven
