@@ -67,6 +67,13 @@ closed loop again.
 - For overlays, use geometry-based overlap detection or reliably rescan when an offscreen target
   enters the viewport. A one-time `elementFromPoint()`/`elementsFromPoint()` check at insertion
   time is insufficient.
+- For visible selection repair, an override on the ID-bearing ancestor's own `::selection` is
+  insufficient because the selected text may live in an un-IDed descendant and the page may use
+  `#ancestor :not(input)::selection { background: transparent !important; }`. Generate an
+  `!important`, non-transparent background rule that actually matches descendants under every
+  relevant existing and dynamically inserted ID-bearing ancestor, with specificity exceeding
+  the page's ID-scoped descendant rule. Reapply this rule set when IDs or relevant descendants
+  are added. A fixed list of test fixture IDs or ancestor-only selectors is not acceptable.
 
 ## Success criteria
 
