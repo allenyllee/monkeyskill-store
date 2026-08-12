@@ -13,7 +13,9 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  # Only the newest Store commit should reach Pages. A stale queued deployment must not
+  # hold the environment lock and block every later push.
+  cancel-in-progress: true
 
 jobs:
   build:
