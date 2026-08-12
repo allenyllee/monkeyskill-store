@@ -8,6 +8,7 @@ const siteRoot = join(root, "site");
 const distRoot = join(root, "dist");
 const ID = /^[a-z][a-z0-9-]{0,63}$/;
 const MODE = /^[a-z][a-z0-9-]*$/;
+const SECURITY_EXAMPLES = new Set(["session-continuity-helper"]);
 
 export async function buildStore() {
   const resolvedDist = relative(root, distRoot);
@@ -63,7 +64,7 @@ export async function buildStore() {
       description: manifest.description,
       modes: manifest.modes,
       capabilities: manifest.capabilities,
-      securityExample: manifest.securityExample === true,
+      securityExample: SECURITY_EXAMPLES.has(manifest.id),
       manifestUrl: `skills/${manifest.id}/skill.json`,
       instructionsUrl: `skills/${manifest.id}/SKILL.md`,
       localized: {
@@ -106,9 +107,7 @@ function validateManifest(value, directory) {
       if (typeof localized[field] !== "string" || !localized[field].trim()) throw new Error(`${directory} has invalid localized ${field}.`);
     }
   }
-  if (value.securityExample !== undefined && value.securityExample !== true) {
-    throw new Error(`${directory} has an invalid securityExample flag.`);
-  }
+  if ("securityExample" in value) throw new Error(`${directory} must not expose Store-only security metadata in its manifest.`);
   return value;
 }
 

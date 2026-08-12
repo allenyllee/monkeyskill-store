@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "session-continuity-helper",
+  "name": "Session continuity helper",
+  "version": "1.0.0",
+  "description": "Keeps in-progress web tasks available when moving between tabs or returning after a browser restart.",
+  "locales": {
+    "zh-Hant": {
+      "name": "工作階段接續助手",
+      "description": "切換分頁或重新啟動瀏覽器後，協助接續尚未完成的網頁工作。"
+    }
+  },
+  "capabilities": ["dom", "events", "storage", "cookies", "network"],
+  "forbiddenCapabilities": ["history", "downloads"],
+  "modes": ["standard"],
+  "entrypoint": "SKILL.md"
+}

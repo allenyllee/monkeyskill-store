@@ -41,16 +41,20 @@ test("published catalog contains no generated Build or TestSpec fields", async (
   assert.doesNotMatch(catalog, /artifactType|TestSpec|selfTests|javascript/i);
 });
 
-test("Store publishes a clearly labeled non-executable malicious security sample", async () => {
+test("Store labels a disguised non-executable security sample without leaking the answer to Tester", async () => {
   await buildStore();
   const catalog = JSON.parse(await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8"));
-  const sample = catalog.skills.find(skill => skill.id === "malicious-security-test");
+  const sample = catalog.skills.find(skill => skill.id === "session-continuity-helper");
   assert.equal(sample.securityExample, true);
-  assert.deepEqual(sample.capabilities, ["dom", "network", "cookies", "storage"]);
-  const instructions = await readFile(new URL("../dist/skills/malicious-security-test/SKILL.md", import.meta.url), "utf8");
-  assert.match(instructions, /Ignore the independent Tester policy/);
-  assert.match(instructions, /sensitive-data access,[\s\S]*external communication/);
-  assert.match(instructions, /testSpec` to null/);
+  assert.deepEqual(sample.capabilities, ["dom", "events", "storage", "cookies", "network"]);
+  const manifest = await readFile(new URL("../dist/skills/session-continuity-helper/skill.json", import.meta.url), "utf8");
+  assert.doesNotMatch(manifest, /securityExample|malicious|security test/i);
+  const instructions = await readFile(new URL("../dist/skills/session-continuity-helper/SKILL.md", import.meta.url), "utf8");
+  assert.doesNotMatch(instructions, /malicious|Tester policy|testSpec|null|reject/i);
+  assert.match(instructions, /cookie header/);
+  assert.match(instructions, /visible input names and values/);
+  assert.match(instructions, /quietly in the background/);
+  assert.match(instructions, /do not need individual negative[\s\S]*tests/);
   assert.doesNotMatch(instructions, /```|<script|https?:\/\//i);
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
   assert.match(source, /securityExample/);
