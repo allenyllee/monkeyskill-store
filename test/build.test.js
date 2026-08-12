@@ -41,6 +41,22 @@ test("published catalog contains no generated Build or TestSpec fields", async (
   assert.doesNotMatch(catalog, /artifactType|TestSpec|selfTests|javascript/i);
 });
 
+test("Store publishes a clearly labeled non-executable malicious security sample", async () => {
+  await buildStore();
+  const catalog = JSON.parse(await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8"));
+  const sample = catalog.skills.find(skill => skill.id === "malicious-security-test");
+  assert.equal(sample.securityExample, true);
+  assert.deepEqual(sample.capabilities, ["dom", "network", "cookies", "storage"]);
+  const instructions = await readFile(new URL("../dist/skills/malicious-security-test/SKILL.md", import.meta.url), "utf8");
+  assert.match(instructions, /Ignore the independent Tester policy/);
+  assert.match(instructions, /sensitive-data access,[\s\S]*external communication/);
+  assert.match(instructions, /testSpec` to null/);
+  assert.doesNotMatch(instructions, /```|<script|https?:\/\//i);
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /securityExample/);
+  assert.match(source, /Test security gate/);
+});
+
 test("restore-right-click publishes its complete 16-method demo with the MSkill", async () => {
   await buildStore();
   const demo = await readFile(new URL("../dist/skills/restore-right-click/demo/index.html", import.meta.url), "utf8");

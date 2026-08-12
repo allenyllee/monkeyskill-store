@@ -63,6 +63,7 @@ export async function buildStore() {
       description: manifest.description,
       modes: manifest.modes,
       capabilities: manifest.capabilities,
+      securityExample: manifest.securityExample === true,
       manifestUrl: `skills/${manifest.id}/skill.json`,
       instructionsUrl: `skills/${manifest.id}/SKILL.md`,
       localized: {
@@ -104,6 +105,9 @@ function validateManifest(value, directory) {
     for (const field of ["name", "description"]) {
       if (typeof localized[field] !== "string" || !localized[field].trim()) throw new Error(`${directory} has invalid localized ${field}.`);
     }
+  }
+  if (value.securityExample !== undefined && value.securityExample !== true) {
+    throw new Error(`${directory} has an invalid securityExample flag.`);
   }
   return value;
 }

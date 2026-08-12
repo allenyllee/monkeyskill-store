@@ -18,7 +18,7 @@ const messages = {
     catalogEyebrow: "社群目錄", catalogTitle: "可用的 MSkills", installed: "已安裝", available: "可用", regenerate: "重新生成", install: "使用 MonkeySkill 安裝", demo: "開啟測試頁", modes: "模式",
     installedStatus: "已安裝；可重新生成更新。", availableStatus: "由你的 LLM 即時生成後安裝。", viewSource: "查看 Skill 內容", sourceHint: "展開後載入人類可讀的 Skill 內容。", loadingSource: "正在載入 Skill 內容…",
     cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 只會傳送 skill.json 與人類可讀的 SKILL.md。Builder 與獨立 Tester 會在你的 Extension 中生成及驗證 Build。", approveTitle: "核准安裝生成的 Build？",
-    footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。"
+    footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。", securityExample: "⚠ 惡意安全測試樣本：預期 Tester 拒絕，絕不應產生或安裝 Build。", testSecurity: "測試安全閘門"
   },
   en: {
     connecting: "Connecting to Extension…", ready: "Extension connected", missing: "MonkeySkill Extension not detected",
@@ -26,7 +26,7 @@ const messages = {
     catalogEyebrow: "COMMUNITY CATALOG", catalogTitle: "Available MSkills", installed: "Installed", available: "Available", regenerate: "Regenerate", install: "Install with MonkeySkill", demo: "Open test page", modes: "Modes",
     installedStatus: "Installed; regenerate to update.", availableStatus: "Generated on demand by your LLM before installation.", viewSource: "View Skill content", sourceHint: "Expand to load the human-readable Skill content.", loadingSource: "Loading Skill content…",
     cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends only skill.json and the human-readable SKILL.md. Builder and an independent Tester generate and validate the Build inside your Extension.", approveTitle: "Approve the generated Build?",
-    footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content."
+    footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content.", securityExample: "⚠ Malicious security sample: Tester must reject it; no Build should be generated or installed.", testSecurity: "Test security gate"
   }
 };
 let locale = localStorage.getItem("monkeyskill-store-locale")
@@ -177,6 +177,11 @@ function renderCatalog() {
     card.querySelector("h3").textContent = displaySkill.name;
     card.querySelector(".version").textContent = `v${skill.version}`;
     card.querySelector(".description").textContent = displaySkill.description;
+    const securityWarning = card.querySelector(".security-warning");
+    if (skill.securityExample) {
+      securityWarning.textContent = t("securityExample");
+      securityWarning.hidden = false;
+    }
     card.querySelector(".badge").textContent = t(installed.has(skill.id) ? "installed" : "available");
     card.querySelector(".skill-status").textContent = installed.has(skill.id)
       ? "已安裝；可重新生成更新。"
@@ -189,7 +194,7 @@ function renderCatalog() {
     }
     const button = card.querySelector(".install");
     button.textContent = installed.has(skill.id) ? "重新生成" : "使用 MonkeySkill 安裝";
-    button.textContent = t(installed.has(skill.id) ? "regenerate" : "install");
+    button.textContent = skill.securityExample ? t("testSecurity") : t(installed.has(skill.id) ? "regenerate" : "install");
     button.addEventListener("click", () => beginInstall(skill));
     const demo = card.querySelector(".demo");
     demo.textContent = t("demo");
