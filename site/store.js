@@ -177,8 +177,8 @@ async function reviewDraft(draft) {
       `Model: ${draft.generation.model}`,
       `Tester: ${draft.generation.testerModel}`,
       `Generation attempts: ${draft.generation.attempts}`,
-      `Builder self-tests: ${draft.selfTestCount - (draft.selfInconclusiveCount || 0)}/${draft.selfTestCount}`,
-      `Independent tests: ${draft.testCount - (draft.inconclusiveCount || 0)}/${draft.testCount}`,
+      `Builder TestSpec: ${draft.publicTestCount - (draft.publicTestInconclusiveCount || 0)}/${draft.publicTestCount}`,
+      `Independent TestSpec: ${draft.independentTestCount - (draft.independentTestInconclusiveCount || 0)}/${draft.independentTestCount}`,
       `Hash: ${draft.generation.hash.slice(0, 16)}`,
       `Validation: ${draft.validation.join(", ")}`
     ].join("\n"),

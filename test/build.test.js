@@ -20,7 +20,7 @@ test("build creates a catalog from human-readable Skill directories", async () =
 test("published catalog contains no generated Build or TestSpec fields", async () => {
   await buildStore();
   const catalog = await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8");
-  assert.doesNotMatch(catalog, /artifactType|testSpec|selfTests|javascript/i);
+  assert.doesNotMatch(catalog, /artifactType|TestSpec|selfTests|javascript/i);
 });
 
 test("restore-right-click publishes its complete 16-method demo with the MSkill", async () => {
@@ -67,6 +67,13 @@ test("local development Store can request an automated Extension reload", async 
   assert.match(source, /searchParams\.get\("reload-extension"\) !== "1"/);
   assert.match(source, /rpc\("reload-extension", null, \{\}, 3000\)/);
   assert.match(source, /history\.replaceState/);
+});
+
+test("Store presents both test sources as TestSpecs", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /Builder TestSpec:/);
+  assert.match(source, /Independent TestSpec:/);
+  assert.doesNotMatch(source, /Builder self-tests:|Independent tests:/);
 });
 
 test("local Store server sends browser-safe image MIME types", async () => {
