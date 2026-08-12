@@ -24,6 +24,9 @@ Restore the browser context menu, text selection, copying, cutting, pasting, and
 - When the user deliberately clicks an input, textarea, link, button, or editable control after selecting page text, discard the saved page range instead of restoring it; the clicked control must retain focus and remain usable.
 - Restore pointer events on blocked images, video, canvas, and editable controls, and bypass empty overlays covering any of those targets, including overlays inserted after the covered target and after the restoration script has started. This must work for targets below the initial viewport: an overlay inserted while offscreen must no longer block the target after the user scrolls to it.
 - Restore visible selection colors when a page makes `::selection` transparent, including ID-specific author rules that also use `!important`.
+  The ID may belong to an ancestor while the actually selected descendant has no ID. A rule that
+  only styles the ancestor's own `::selection` does not satisfy this requirement; the override
+  must match selected descendants beneath that ID-scoped ancestor.
 - Stop paste-specific handlers without reading clipboard contents, including rollback triggered by the resulting `beforeinput` or `input` event. Preserve the browser's native paste default action: do not cancel `paste` or `beforeinput` and manually replace the native edit. The inserted value must survive a page-world rollback even when the resulting `input` event does not expose the pasted text in `InputEvent.data` or identify itself with `inputType="insertFromPaste"`, without reading the clipboard or the control's existing value.
 
 ## Safety constraints
