@@ -8,6 +8,10 @@ h1, h2, h3 { color: #f4f4f1; }
 .brand span { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #d9ff57; color: #111; }
 .connection { color: #aaa; font-size: 14px; }
 .connection.ready { color: #d9ff57; }
+.topbar-actions { display: flex; align-items: center; gap: 14px; }
+.language-switch { display: flex; gap: 4px; padding: 3px; border: 1px solid #ffffff20; border-radius: 10px; }
+.language-switch button { min-width: 42px; border: 0; padding: 6px 9px; background: transparent; color: #aaa; font-size: 12px; }
+.language-switch button[aria-pressed="true"] { background: #d9ff57; color: #111; }
 main { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
 .hero { padding: clamp(64px,10vw,120px) 0 80px; max-width: 780px; }
 .eyebrow { margin: 0 0 10px; color: #d9ff57; font-size: 12px; font-weight: 700; letter-spacing: .13em; }
@@ -44,4 +48,4 @@ dialog h2 { margin-bottom: 14px; } dialog p { color: #bbb; line-height: 1.6; }
 dialog pre { max-height: 300px; overflow: auto; white-space: pre-wrap; color: #aaa; }
 .dialog-actions { display: flex; justify-content: end; gap: 10px; margin-top: 24px; }
 footer { display: flex; justify-content: space-between; gap: 18px; width: min(1120px,calc(100% - 40px)); margin: 72px auto 0; padding: 24px 0 40px; border-top: 1px solid #ffffff1f; color: #999; font-size: 13px; }
-@media (max-width: 600px) { .topbar, .catalog-heading, footer { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 600px) { .topbar, .catalog-heading, footer { align-items: flex-start; flex-direction: column; } .topbar-actions { width: 100%; justify-content: space-between; } }

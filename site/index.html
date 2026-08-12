@@ -10,19 +10,25 @@
   <body>
     <header class="topbar">
       <a class="brand" href="./"><span aria-hidden="true">M</span> MonkeySkill Store</a>
-      <span id="connection" class="connection">Connecting to Extension…</span>
+      <div class="topbar-actions">
+        <span id="connection" class="connection" data-i18n="connection.connecting">Connecting to Extension…</span>
+        <div class="language-switch" role="group" aria-label="Language">
+          <button type="button" data-locale="zh-Hant">中文</button>
+          <button type="button" data-locale="en">EN</button>
+        </div>
+      </div>
     </header>
 
     <main>
       <section class="hero">
-        <p class="eyebrow">INSTALL ABILITIES, NOT EXTENSIONS</p>
-        <h1>需要的功能，<br>現在才生成。</h1>
-        <p>這個 Store 只發布人類可讀的 MSkill 規格。MonkeySkill Extension 會使用你的 LLM 生成 Build，通過公開與獨立測試後，再請你核准安裝。</p>
+        <p class="eyebrow" data-i18n="hero.eyebrow">INSTALL ABILITIES, NOT EXTENSIONS</p>
+        <h1 data-i18n="hero.title">需要的功能，現在才生成。</h1>
+        <p data-i18n="hero.copy">這個 Store 只發布人類可讀的 MSkill 規格。MonkeySkill Extension 會使用你的 LLM 生成 Build，通過公開與獨立測試後，再請你核准安裝。</p>
       </section>
 
       <section aria-labelledby="catalog-title">
         <div class="catalog-heading">
-          <div><p class="eyebrow">COMMUNITY CATALOG</p><h2 id="catalog-title">可用的 MSkills</h2></div>
+          <div><p class="eyebrow" data-i18n="catalog.eyebrow">COMMUNITY CATALOG</p><h2 id="catalog-title" data-i18n="catalog.title">可用的 MSkills</h2></div>
           <span id="count">0 MSKILLS</span>
         </div>
         <p id="notice" class="notice" hidden></p>
@@ -35,16 +41,16 @@
         <div class="skill-meta"><span class="badge">Available</span><span class="version"></span></div>
         <h3></h3>
         <p class="description"></p>
-        <div class="modes" aria-label="Modes"></div>
+        <div class="modes" aria-label="Modes" data-i18n-aria-label="card.modes"></div>
         <p class="skill-status"></p>
         <div class="skill-actions">
-          <button class="install" type="button">使用 MonkeySkill 安裝</button>
-          <a class="demo" target="_blank" rel="noopener" hidden>開啟測試頁</a>
+          <button class="install" type="button" data-i18n="card.install">使用 MonkeySkill 安裝</button>
+          <a class="demo" target="_blank" rel="noopener" hidden data-i18n="card.demo">開啟測試頁</a>
         </div>
         <details class="skill-source">
-          <summary>查看 Skill 內容</summary>
+          <summary data-i18n="card.viewSource">查看 Skill 內容</summary>
           <div class="skill-source-panel">
-            <p class="skill-source-status">展開後載入人類可讀的 SKILL.md。</p>
+            <p class="skill-source-status" data-i18n="card.sourceHint">展開後載入人類可讀的 SKILL.md。</p>
             <pre class="skill-source-content" tabindex="0" hidden></pre>
           </div>
         </details>
@@ -58,16 +64,16 @@
         <p id="dialog-copy"></p>
         <pre id="dialog-details" hidden></pre>
         <div class="dialog-actions">
-          <button value="cancel">取消</button>
+          <button value="cancel" data-i18n="dialog.cancel">取消</button>
           <button id="dialog-confirm" class="primary" value="confirm">確認</button>
         </div>
       </form>
     </dialog>
 
     <footer>
-      <a href="https://github.com/allenyllee/monkeyskill-store">GitHub、投稿與 Fork</a>
-      <span>Store 不包含生成的 JavaScript。</span>
+      <a href="https://github.com/allenyllee/monkeyskill-store" data-i18n="footer.github">GitHub、投稿與 Fork</a>
+      <span data-i18n="footer.note">Store 不包含生成的 JavaScript。</span>
     </footer>
-    <script type="module" src="store.js?v=5"></script>
+    <script type="module" src="store.js?v=6"></script>
   </body>
 </html>

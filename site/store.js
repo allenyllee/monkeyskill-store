@@ -11,6 +11,29 @@ const dialogDetails = document.querySelector("#dialog-details");
 const dialogConfirm = document.querySelector("#dialog-confirm");
 const pendingRequests = new Map();
 const instructionCache = new Map();
+const messages = {
+  "zh-Hant": {
+    connecting: "正在連線至 Extension…", ready: "Extension 已連線", missing: "未偵測到 MonkeySkill Extension",
+    heroEyebrow: "安裝能力，而不是更多擴充功能", heroTitle: "需要的功能，\n現在才生成。", heroCopy: "這個 Store 只發布人類可讀的 MSkill 規格。MonkeySkill Extension 會使用你的 LLM 生成 Build，通過公開與獨立測試後，再請你核准安裝。",
+    catalogEyebrow: "社群目錄", catalogTitle: "可用的 MSkills", installed: "已安裝", available: "可用", regenerate: "重新生成", install: "使用 MonkeySkill 安裝", demo: "開啟測試頁", modes: "模式",
+    installedStatus: "已安裝；可重新生成更新。", availableStatus: "由你的 LLM 即時生成後安裝。", viewSource: "查看 Skill 內容", sourceHint: "展開後載入人類可讀的 Skill 內容。", loadingSource: "正在載入 Skill 內容…",
+    cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 只會傳送 skill.json 與人類可讀的 SKILL.md。Builder 與獨立 Tester 會在你的 Extension 中生成及驗證 Build。", approveTitle: "核准安裝生成的 Build？",
+    footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。"
+  },
+  en: {
+    connecting: "Connecting to Extension…", ready: "Extension connected", missing: "MonkeySkill Extension not detected",
+    heroEyebrow: "INSTALL ABILITIES, NOT EXTENSIONS", heroTitle: "Generate the ability\nwhen you need it.", heroCopy: "This Store publishes only human-readable MSkill specifications. MonkeySkill Extension uses your LLM to generate a Build, validates it with public and independent tests, then asks for approval before installation.",
+    catalogEyebrow: "COMMUNITY CATALOG", catalogTitle: "Available MSkills", installed: "Installed", available: "Available", regenerate: "Regenerate", install: "Install with MonkeySkill", demo: "Open test page", modes: "Modes",
+    installedStatus: "Installed; regenerate to update.", availableStatus: "Generated on demand by your LLM before installation.", viewSource: "View Skill content", sourceHint: "Expand to load the human-readable Skill content.", loadingSource: "Loading Skill content…",
+    cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends only skill.json and the human-readable SKILL.md. Builder and an independent Tester generate and validate the Build inside your Extension.", approveTitle: "Approve the generated Build?",
+    footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content."
+  }
+};
+let locale = localStorage.getItem("monkeyskill-store-locale")
+  || (navigator.languages?.some(language => /^zh(?:-|$)/i.test(language)) ? "zh-Hant" : "en");
+if (!messages[locale]) locale = "en";
+const t = (key, values = {}) => Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, value), messages[locale][key]);
+const localizedSkill = skill => ({ ...skill, ...(skill.localized?.[locale] || skill.localized?.en || {}) });
 
 if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
   window.monkeySkillClosedLoop = Object.freeze({
@@ -22,6 +45,29 @@ if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
 let skills = [];
 let installed = new Map();
 let extensionReady = false;
+
+function applyLocale() {
+  document.documentElement.lang = locale;
+  const keys = {
+    "hero.eyebrow": "heroEyebrow", "hero.title": "heroTitle", "hero.copy": "heroCopy",
+    "catalog.eyebrow": "catalogEyebrow", "catalog.title": "catalogTitle", "card.modes": "modes",
+    "card.install": "install", "card.demo": "demo", "card.viewSource": "viewSource", "card.sourceHint": "sourceHint",
+    "dialog.cancel": "cancel", "footer.github": "footerGithub", "footer.note": "footerNote"
+  };
+  for (const element of document.querySelectorAll("[data-i18n]")) element.textContent = t(keys[element.dataset.i18n]);
+  for (const element of document.querySelectorAll("[data-i18n-aria-label]")) element.setAttribute("aria-label", t(keys[element.dataset.i18nAriaLabel]));
+  for (const button of document.querySelectorAll("[data-locale]")) button.setAttribute("aria-pressed", String(button.dataset.locale === locale));
+  connection.textContent = t(extensionReady ? "ready" : "connecting");
+  renderCatalog();
+}
+
+for (const button of document.querySelectorAll("[data-locale]")) button.addEventListener("click", () => {
+  locale = button.dataset.locale;
+  localStorage.setItem("monkeyskill-store-locale", locale);
+  instructionCache.clear();
+  applyLocale();
+});
+applyLocale();
 
 window.addEventListener("message", event => {
   const message = event.data;
@@ -72,7 +118,7 @@ async function probeExtension() {
 function markExtensionReady() {
   if (extensionReady) return;
   extensionReady = true;
-  connection.textContent = "Extension connected";
+  connection.textContent = t("ready");
   connection.classList.add("ready");
   void setTestModeForLocalDevelopment();
   void refreshInstalled();
@@ -102,7 +148,7 @@ async function initialize() {
     skills = value.skills;
     renderCatalog();
     setTimeout(() => {
-      if (!extensionReady) connection.textContent = "MonkeySkill Extension not detected";
+      if (!extensionReady) connection.textContent = t("missing");
     }, 2400);
   } catch (error) {
     showNotice(error.message, true);
@@ -125,15 +171,17 @@ function renderCatalog() {
   catalog.replaceChildren();
   count.textContent = `${skills.length} MSKILL${skills.length === 1 ? "" : "S"}`;
   for (const skill of skills) {
+    const displaySkill = localizedSkill(skill);
     const card = template.content.firstElementChild.cloneNode(true);
     card.dataset.skillId = skill.id;
-    card.querySelector("h3").textContent = skill.name;
+    card.querySelector("h3").textContent = displaySkill.name;
     card.querySelector(".version").textContent = `v${skill.version}`;
-    card.querySelector(".description").textContent = skill.description;
-    card.querySelector(".badge").textContent = installed.has(skill.id) ? "Installed" : "Available";
+    card.querySelector(".description").textContent = displaySkill.description;
+    card.querySelector(".badge").textContent = t(installed.has(skill.id) ? "installed" : "available");
     card.querySelector(".skill-status").textContent = installed.has(skill.id)
       ? "已安裝；可重新生成更新。"
       : "由你的 LLM 生成後安裝。";
+    card.querySelector(".skill-status").textContent = t(installed.has(skill.id) ? "installedStatus" : "availableStatus");
     for (const mode of skill.modes) {
       const pill = document.createElement("span");
       pill.textContent = mode;
@@ -141,8 +189,11 @@ function renderCatalog() {
     }
     const button = card.querySelector(".install");
     button.textContent = installed.has(skill.id) ? "重新生成" : "使用 MonkeySkill 安裝";
+    button.textContent = t(installed.has(skill.id) ? "regenerate" : "install");
     button.addEventListener("click", () => beginInstall(skill));
     const demo = card.querySelector(".demo");
+    demo.textContent = t("demo");
+    card.querySelector(".modes").setAttribute("aria-label", t("modes"));
     if (skill.demoUrl) {
       const demoUrl = new URL(skill.demoUrl, location.href);
       if (demoUrl.origin === location.origin) {
@@ -151,6 +202,8 @@ function renderCatalog() {
       }
     }
     const source = card.querySelector(".skill-source");
+    source.querySelector("summary").textContent = t("viewSource");
+    source.querySelector(".skill-source-status").textContent = t("sourceHint");
     source.addEventListener("toggle", () => {
       if (source.open) void revealSkillSource(skill, source);
     });
@@ -164,16 +217,19 @@ async function revealSkillSource(skill, container) {
   if (content.dataset.loaded === "true") return;
   status.hidden = false;
   status.textContent = "正在載入 SKILL.md…";
+  status.textContent = t("loadingSource");
   status.classList.remove("error");
   try {
-    let instructions = instructionCache.get(skill.id);
+    const displaySkill = localizedSkill(skill);
+    const cacheKey = `${skill.id}:${locale}`;
+    let instructions = instructionCache.get(cacheKey);
     if (!instructions) {
-      const instructionsUrl = new URL(skill.instructionsUrl, location.href);
+      const instructionsUrl = new URL(displaySkill.instructionsUrl || skill.instructionsUrl, location.href);
       if (instructionsUrl.origin !== location.origin) throw new Error("Skill 內容必須來自相同來源。");
       const response = await fetch(instructionsUrl, { cache: "no-store" });
       if (!response.ok) throw new Error("無法載入 SKILL.md。");
       instructions = await response.text();
-      instructionCache.set(skill.id, instructions);
+      instructionCache.set(cacheKey, instructions);
     }
     content.textContent = instructions;
     content.dataset.loaded = "true";
@@ -187,12 +243,12 @@ async function revealSkillSource(skill, container) {
 
 async function beginInstall(skill) {
   try {
-    if (!extensionReady) throw new Error("請先安裝並啟用 MonkeySkill Extension。");
+    if (!extensionReady) throw new Error(locale === "zh-Hant" ? "請先安裝並啟用 MonkeySkill Extension。" : "Install and enable MonkeySkill Extension first.");
     const accepted = await ask({
       eyebrow: "INSTALL MSKILL",
-      title: `安裝 ${skill.name}？`,
-      copy: "Store 只會傳送 skill.json 與人類可讀的 SKILL.md。Builder 與獨立 Tester 會在你的 Extension 中生成及驗證 Build。",
-      confirm: "是，開始生成"
+      title: t("installTitle", { name: localizedSkill(skill).name }),
+      copy: t("installCopy"),
+      confirm: t("start")
     });
     if (!accepted) return;
     setBusy(skill.id, true, "讀取規格並交給 LLM…");
@@ -227,7 +283,7 @@ async function loadSkillPackage(entry) {
 async function reviewDraft(draft) {
   const approved = await ask({
     eyebrow: "VALIDATION PASSED",
-    title: "核准安裝生成的 Build？",
+    title: t("approveTitle"),
     copy: draft.summary,
     details: [
       `Model: ${draft.generation.model}`,
@@ -238,7 +294,7 @@ async function reviewDraft(draft) {
       `Hash: ${draft.generation.hash.slice(0, 16)}`,
       `Validation: ${draft.validation.join(", ")}`
     ].join("\n"),
-    confirm: "是，核准安裝"
+    confirm: t("approve")
   });
   if (!approved) {
     await rpc("discard", draft.skillId);

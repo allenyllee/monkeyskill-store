@@ -28,7 +28,7 @@ export async function buildStore() {
       .filter(item => item.isFile())
       .map(item => item.name)
       .sort();
-    const unexpected = files.filter(name => !["SKILL.md", "skill.json"].includes(name));
+    const unexpected = files.filter(name => !["SKILL.md", "SKILL.zh-Hant.md", "skill.json"].includes(name));
     if (unexpected.length > 0) throw new Error(`${entry.name} contains unsupported files: ${unexpected.join(", ")}`);
     const directories = children.filter(item => item.isDirectory()).map(item => item.name);
     if (directories.some(name => name !== "demo")) throw new Error(`${entry.name} contains an unsupported directory.`);
@@ -42,6 +42,11 @@ export async function buildStore() {
     await mkdir(destination, { recursive: true });
     await cp(join(skillRoot, "skill.json"), join(destination, "skill.json"));
     await cp(join(skillRoot, "SKILL.md"), join(destination, "SKILL.md"));
+    if (files.includes("SKILL.zh-Hant.md")) {
+      const localizedInstructions = await readFile(join(skillRoot, "SKILL.zh-Hant.md"), "utf8");
+      validateInstructions(localizedInstructions, `${manifest.id}/zh-Hant`);
+      await cp(join(skillRoot, "SKILL.zh-Hant.md"), join(destination, "SKILL.zh-Hant.md"));
+    }
     if (manifest.demo) {
       if (manifest.demo !== "demo/index.html" || !directories.includes("demo")) {
         throw new Error(`${manifest.id} has an invalid demo entrypoint.`);
@@ -60,6 +65,15 @@ export async function buildStore() {
       capabilities: manifest.capabilities,
       manifestUrl: `skills/${manifest.id}/skill.json`,
       instructionsUrl: `skills/${manifest.id}/SKILL.md`,
+      localized: {
+        en: { name: manifest.name, description: manifest.description, instructionsUrl: `skills/${manifest.id}/SKILL.md` },
+        ...(manifest.locales?.["zh-Hant"] ? {
+          "zh-Hant": {
+            ...manifest.locales["zh-Hant"],
+            instructionsUrl: `skills/${manifest.id}/SKILL.zh-Hant.md`
+          }
+        } : {})
+      },
       ...(manifest.demo ? { demoUrl: `skills/${manifest.id}/${manifest.demo}` } : {})
     });
   }
@@ -82,6 +96,13 @@ function validateManifest(value, directory) {
   for (const field of ["capabilities", "forbiddenCapabilities"]) {
     if (!Array.isArray(value[field]) || value[field].some(item => typeof item !== "string" || !item)) {
       throw new Error(`${directory} has invalid ${field}.`);
+    }
+  }
+  if (value.locales !== undefined) {
+    const localized = value.locales?.["zh-Hant"];
+    if (!localized || typeof localized !== "object" || Array.isArray(localized)) throw new Error(`${directory} has invalid locales.`);
+    for (const field of ["name", "description"]) {
+      if (typeof localized[field] !== "string" || !localized[field].trim()) throw new Error(`${directory} has invalid localized ${field}.`);
     }
   }
   return value;

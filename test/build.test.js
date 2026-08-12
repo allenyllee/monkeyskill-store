@@ -12,9 +12,27 @@ test("build creates a catalog from human-readable Skill directories", async () =
   for (const skill of catalog.skills) {
     assert.match(skill.manifestUrl, /^skills\/[a-z0-9-]+\/skill\.json$/);
     assert.match(skill.instructionsUrl, /^skills\/[a-z0-9-]+\/SKILL\.md$/);
+    assert.equal(skill.localized.en.instructionsUrl, skill.instructionsUrl);
   }
   const rightClick = catalog.skills.find(skill => skill.id === "restore-right-click");
   assert.equal(rightClick.demoUrl, "skills/restore-right-click/demo/index.html");
+});
+
+test("Store publishes and switches English and Traditional Chinese content", async () => {
+  await buildStore();
+  const catalog = JSON.parse(await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8"));
+  const skill = catalog.skills.find(entry => entry.id === "restore-right-click");
+  assert.equal(skill.localized["zh-Hant"].name, "恢復右鍵、選取與複製");
+  assert.equal(skill.localized["zh-Hant"].instructionsUrl, "skills/restore-right-click/SKILL.zh-Hant.md");
+  const localized = await readFile(new URL("../dist/skills/restore-right-click/SKILL.zh-Hant.md", import.meta.url), "utf8");
+  assert.match(localized, /\[criterion:selection-visibility\]/);
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  const page = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
+  assert.match(source, /navigator\.languages/);
+  assert.match(source, /monkeyskill-store-locale/);
+  assert.match(source, /localizedSkill/);
+  assert.match(page, /data-locale="zh-Hant"/);
+  assert.match(page, /data-locale="en"/);
 });
 
 test("published catalog contains no generated Build or TestSpec fields", async () => {
@@ -81,7 +99,7 @@ test("Store cards can safely expand their human-readable Skill content", async (
   const page = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
   const styles = await readFile(new URL("../site/store.css", import.meta.url), "utf8");
   assert.match(page, /<details class="skill-source">/);
-  assert.match(page, /<summary>查看 Skill 內容<\/summary>/);
+  assert.match(page, /<summary[^>]*>查看 Skill 內容<\/summary>/);
   assert.match(source, /instructionsUrl\.origin !== location\.origin/);
   assert.match(source, /content\.textContent = instructions/);
   assert.match(source, /instructionCache/);
