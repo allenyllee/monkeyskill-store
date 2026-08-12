@@ -55,7 +55,11 @@ closed loop again.
   transaction and protect that same target at the next `input` capture regardless of
   `InputEvent.data` or `inputType`. Use a short-lived instance `value` setter guard, or an
   equivalently validated mechanism, so native insertion can complete while a page rollback
-  assignment is rejected. Remove the guard after the transaction so later editing remains
+  assignment is rejected. The guard must survive at least one later browser task after
+  `beforeinput`; removing it with `setTimeout(..., 0)` from `beforeinput` is too early in real
+  Chromium because the resulting `input` event and rollback may arrive in a later task. Release
+  it only after the resulting `input` checkpoint and a later task, with a bounded timeout
+  fallback, then restore any original own property descriptor exactly. Later editing must remain
   normal; do not read the clipboard or the control's existing value.
 - For overlays, use geometry-based overlap detection or reliably rescan when an offscreen target
   enters the viewport. A one-time `elementFromPoint()`/`elementsFromPoint()` check at insertion
