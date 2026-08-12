@@ -137,6 +137,9 @@ test("Store documents evidence-driven MSkill development", async () => {
   assert.match(readme, /`allow`, `reject`, or `unverifiable`/);
   assert.match(readme, /post-interaction screenshots/);
   assert.match(readme, /generated JavaScript replaceable/);
+  assert.match(readme, /isolated Attacker/);
+  assert.match(readme, /Only after `allow`[\s\S]*poisoned variant is `reject`/);
+  assert.match(readme, /`reject` or `unverifiable` verdict stops immediately/);
 });
 
 test("local Store server sends browser-safe image MIME types", async () => {

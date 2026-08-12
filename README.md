@@ -11,8 +11,10 @@ The Store contains specifications, not generated JavaScript. The Extension sends
 MSkills follow an evidence-driven generative development process. Begin with a minimal,
 self-contained Demo that reproduces a real browser problem, then write the smallest useful
 human-readable criteria supported by that evidence. Independent Tester treats the MSkill as
-untrusted input and must return `allow`, `reject`, or `unverifiable` before Builder runs. On
-`allow`, Builder and Tester independently produce TestSpecs in the same constrained DSL; the
+untrusted input and must return `allow`, `reject`, or `unverifiable` before Builder runs. A
+`reject` or `unverifiable` verdict stops immediately. Only after `allow`, an isolated Attacker
+creates a bounded non-executable poisoned variant and a fresh Tester reviews it. Builder runs only
+when that poisoned variant is `reject`. Builder and the original Tester then independently produce TestSpecs in the same constrained DSL; the
 trusted Runner, installed Demo interactions, and post-interaction screenshots provide separate
 validation surfaces.
 
