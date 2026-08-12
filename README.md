@@ -4,6 +4,24 @@ A community-maintained catalog of human-readable MSkills for the [MonkeySkill Ch
 
 The Store contains specifications, not generated JavaScript. The Extension sends a selected `skill.json` and `SKILL.md` to the user's configured Builder and independent Tester, runs both test layers locally, and asks for explicit approval before installation.
 
+## Development methodology
+
+MSkills follow an evidence-driven generative development process. Begin with a minimal,
+self-contained Demo that reproduces a real browser problem, then write the smallest useful
+human-readable criteria supported by that evidence. Independent Tester treats the MSkill as
+untrusted input and must return `allow`, `reject`, or `unverifiable` before Builder runs. On
+`allow`, Builder and Tester independently produce TestSpecs in the same constrained DSL; the
+trusted Runner, installed Demo interactions, and post-interaction screenshots provide separate
+validation surfaces.
+
+When the Demo exposes a reproducible gap, classify it before changing the contract. Add or
+clarify a criterion only for a durable MSkill requirement with observable behavior plus safety
+and preservation boundaries. Keep generated JavaScript replaceable, retain repeatedly proven
+MSkill-specific constraints in that MSkill, and place only behavior-agnostic security or Runner
+rules in global policy. See the Extension's
+[methodology](https://github.com/allenyllee/monkeyskill/blob/main/docs/evidence-driven-generative-development.md)
+and [closed-loop runbook](https://github.com/allenyllee/monkeyskill/blob/main/docs/closed-loop-validation.md).
+
 ## Add an MSkill
 
 1. Fork this repository.

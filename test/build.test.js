@@ -76,6 +76,14 @@ test("Store presents both test sources as TestSpecs", async () => {
   assert.doesNotMatch(source, /Builder self-tests:|Independent tests:/);
 });
 
+test("Store documents evidence-driven MSkill development", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+  assert.match(readme, /evidence-driven generative development/i);
+  assert.match(readme, /`allow`, `reject`, or `unverifiable`/);
+  assert.match(readme, /post-interaction screenshots/);
+  assert.match(readme, /generated JavaScript replaceable/);
+});
+
 test("local Store server sends browser-safe image MIME types", async () => {
   const source = await readFile(new URL("../scripts/serve.mjs", import.meta.url), "utf8");
   assert.match(source, /\["\.svg", "image\/svg\+xml"\]/);
