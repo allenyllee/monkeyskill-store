@@ -28,6 +28,14 @@ button:hover { border-color: #d9ff57; } button:disabled { cursor: wait; opacity:
 .skill-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .demo { border: 1px solid #ffffff24; border-radius: 10px; padding: 10px 14px; color: #f2f2f2; text-decoration: none; }
 .demo:hover { border-color: #d9ff57; color: #d9ff57; }
+.skill-source { margin-top: 18px; border-top: 1px solid #ffffff18; padding-top: 14px; }
+.skill-source summary { width: fit-content; color: #d9ff57; cursor: pointer; font-weight: 650; }
+.skill-source summary:hover { text-decoration: underline; }
+.skill-source summary:focus-visible { outline: 2px solid #d9ff57; outline-offset: 4px; border-radius: 3px; }
+.skill-source-panel { margin-top: 14px; }
+.skill-source-status { margin: 0; color: #aaa; font-size: 13px; }
+.skill-source-status.error { color: #ff9b9b; }
+.skill-source-content { max-height: min(60vh, 560px); margin: 0; overflow: auto; border: 1px solid #ffffff1f; border-radius: 12px; padding: 16px; background: #101010; color: #d8d8d2; font: 13px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
 .notice { white-space: pre-wrap; padding: 14px 16px; border: 1px solid #d9ff5740; border-radius: 10px; color: #d9ff57; }
 .notice.error { border-color: #ff6b6b55; color: #ff9b9b; }
 dialog { width: min(620px,calc(100% - 32px)); border: 1px solid #ffffff28; border-radius: 18px; padding: 0; background: #191919; color: #f4f4f1; }

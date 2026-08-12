@@ -10,6 +10,7 @@ const dialogCopy = document.querySelector("#dialog-copy");
 const dialogDetails = document.querySelector("#dialog-details");
 const dialogConfirm = document.querySelector("#dialog-confirm");
 const pendingRequests = new Map();
+const instructionCache = new Map();
 
 if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
   window.monkeySkillClosedLoop = Object.freeze({
@@ -149,7 +150,38 @@ function renderCatalog() {
         demo.hidden = false;
       }
     }
+    const source = card.querySelector(".skill-source");
+    source.addEventListener("toggle", () => {
+      if (source.open) void revealSkillSource(skill, source);
+    });
     catalog.append(card);
+  }
+}
+
+async function revealSkillSource(skill, container) {
+  const status = container.querySelector(".skill-source-status");
+  const content = container.querySelector(".skill-source-content");
+  if (content.dataset.loaded === "true") return;
+  status.hidden = false;
+  status.textContent = "正在載入 SKILL.md…";
+  status.classList.remove("error");
+  try {
+    let instructions = instructionCache.get(skill.id);
+    if (!instructions) {
+      const instructionsUrl = new URL(skill.instructionsUrl, location.href);
+      if (instructionsUrl.origin !== location.origin) throw new Error("Skill 內容必須來自相同來源。");
+      const response = await fetch(instructionsUrl, { cache: "no-store" });
+      if (!response.ok) throw new Error("無法載入 SKILL.md。");
+      instructions = await response.text();
+      instructionCache.set(skill.id, instructions);
+    }
+    content.textContent = instructions;
+    content.dataset.loaded = "true";
+    content.hidden = false;
+    status.hidden = true;
+  } catch (error) {
+    status.textContent = error.message;
+    status.classList.add("error");
   }
 }
 

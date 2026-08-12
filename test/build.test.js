@@ -76,6 +76,18 @@ test("Store presents both test sources as TestSpecs", async () => {
   assert.doesNotMatch(source, /Builder self-tests:|Independent tests:/);
 });
 
+test("Store cards can safely expand their human-readable Skill content", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  const page = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../site/store.css", import.meta.url), "utf8");
+  assert.match(page, /<details class="skill-source">/);
+  assert.match(page, /<summary>查看 Skill 內容<\/summary>/);
+  assert.match(source, /instructionsUrl\.origin !== location\.origin/);
+  assert.match(source, /content\.textContent = instructions/);
+  assert.match(source, /instructionCache/);
+  assert.match(styles, /\.skill-source-content/);
+});
+
 test("Store documents evidence-driven MSkill development", async () => {
   const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
   assert.match(readme, /evidence-driven generative development/i);
