@@ -36,10 +36,11 @@ flowchart LR
     Attacker --> Trusted["Trusted Extension code<br/>constructs poisoned variant"]
     Store -. "original content" .-> Trusted
     Trusted --> TesterB{"Fresh Tester B<br/>review poisoned variant"}
-    TesterB -- "allow / unverifiable" --> Fail["Fail closed:<br/>possible injection bypass"]
-    TesterB -- "reject" --> Gate["Required pair:<br/>allow / reject"]
+    TesterB --> Gate{"Differential gate<br/>A = allow, B = ?"}
+    Gate -- "B = allow" --> Fail["Fail closed:<br/>potential prompt injection"]
+    Gate -- "B = unverifiable" --> Unverifiable["Fail closed:<br/>cannot verify safety"]
     Store -. "original MSkill only" .-> Builder["Builder"]
-    Gate --> Builder
+    Gate -- "B = reject" --> Builder
     Builder --> Runner["Shared constrained TestSpec DSL<br/>and trusted Runner"]
     Runner --> Approval["Human approval"]
     Approval --> Browser["Install + Demo + screenshots"]
