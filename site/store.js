@@ -30,6 +30,24 @@ window.addEventListener("message", event => {
 
 void probeExtension();
 void initialize();
+void reloadExtensionForLocalDevelopment();
+
+async function reloadExtensionForLocalDevelopment() {
+  const local = location.protocol === "http:"
+    && ["127.0.0.1", "localhost"].includes(location.hostname)
+    && location.port === "4174";
+  const url = new URL(location.href);
+  if (!local || url.searchParams.get("reload-extension") !== "1") return;
+  url.searchParams.delete("reload-extension");
+  history.replaceState(null, "", url);
+  try {
+    const response = await rpc("reload-extension", null, {}, 3000);
+    if (!response?.ok) throw new Error(response?.error || "Extension reload failed.");
+    setTimeout(() => location.reload(), 500);
+  } catch (error) {
+    showNotice(error.message, true);
+  }
+}
 
 async function probeExtension() {
   for (const delay of [0, 300, 900]) {

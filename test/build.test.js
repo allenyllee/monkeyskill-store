@@ -40,6 +40,16 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
   assert.match(demo, /Dark Reader 等色彩擴充可能干擾此項/);
 });
 
+test("restore-right-click retains closed-loop implementation constraints in its MSkill", async () => {
+  const skill = await readFile(new URL("../skills/restore-right-click/SKILL.md", import.meta.url), "utf8");
+  assert.match(skill, /## Validated implementation constraints/);
+  assert.match(skill, /pointerup.*mouseup.*capture listener/s);
+  assert.match(skill, /neutralize[\s\S]*preventDefault\(\).*at call time/);
+  assert.match(skill, /short-lived instance `value` setter guard/);
+  assert.match(skill, /geometry-based overlap detection/);
+  assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
+});
+
 test("Store actively probes the Extension bridge instead of relying on a one-shot ready event", async () => {
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
   const page = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
@@ -49,6 +59,14 @@ test("Store actively probes the Extension bridge instead of relying on a one-sho
   assert.match(source, /90 \* 60 \* 1000/);
   assert.match(page, /store\.js\?v=\d+/);
   assert.match(page, /store\.css\?v=\d+/);
+});
+
+test("local development Store can request an automated Extension reload", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /reloadExtensionForLocalDevelopment/);
+  assert.match(source, /searchParams\.get\("reload-extension"\) !== "1"/);
+  assert.match(source, /rpc\("reload-extension", null, \{\}, 3000\)/);
+  assert.match(source, /history\.replaceState/);
 });
 
 test("local Store server sends browser-safe image MIME types", async () => {

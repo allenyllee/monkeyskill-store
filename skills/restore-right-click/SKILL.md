@@ -19,12 +19,12 @@ Restore the browser context menu, text selection, copying, cutting, pasting, and
 - Prevent page scripts from cancelling protected events.
 - Restore selection broadly across the page.
 - Block right-button mouse handlers while leaving left-button interactions intact.
-- Preserve a live selection when release events try to clear it.
+- Preserve a live selection when page handlers clear it during or immediately after pointer/mouse release, including a clear scheduled from that release turn. The selected range must still be present after the release workflow settles.
 - Treat restoration as part of the selection gesture only. A later deliberate primary click on another ordinary page area must discard the saved range and collapse the selection normally, even if Chrome reports a late `selectionchange` containing the old non-collapsed range during that dismissal gesture.
 - When the user deliberately clicks an input, textarea, link, button, or editable control after selecting page text, discard the saved page range instead of restoring it; the clicked control must retain focus and remain usable.
 - Restore pointer events on blocked images, video, canvas, and editable controls, and bypass empty overlays covering any of those targets, including overlays inserted after the covered target and after the restoration script has started. This must work for targets below the initial viewport: an overlay inserted while offscreen must no longer block the target after the user scrolls to it.
 - Restore visible selection colors when a page makes `::selection` transparent, including ID-specific author rules that also use `!important`.
-- Stop paste-specific handlers without reading clipboard contents, including rollback triggered by the resulting `beforeinput` or `input` event. Preserve the browser's native paste default action: do not cancel `paste` or `beforeinput` and manually replace the native edit. If a page-world `input` handler rolls the completed edit back, the script may restore that same edit at a later checkpoint using the event's `InputEvent.data`, without reading the clipboard or the control's existing value.
+- Stop paste-specific handlers without reading clipboard contents, including rollback triggered by the resulting `beforeinput` or `input` event. Preserve the browser's native paste default action: do not cancel `paste` or `beforeinput` and manually replace the native edit. The inserted value must survive a page-world rollback even when the resulting `input` event does not expose the pasted text in `InputEvent.data` or identify itself with `inputType="insertFromPaste"`, without reading the clipboard or the control's existing value.
 
 ## Safety constraints
 
@@ -33,13 +33,41 @@ Restore the browser context menu, text selection, copying, cutting, pasting, and
 - Never modify links, form submission, navigation, or left-click handlers.
 - Do not run on Chrome internal pages or the Chrome Web Store.
 
+## Validated implementation constraints
+
+The following constraints were established by repeated clean-room generation and real-browser
+closed-loop validation. Preserve them in future Builds so each regeneration does not rediscover
+the same browser-ordering failures. An alternative implementation is acceptable only if it
+handles the same checkpoints without weakening the safety constraints and passes the complete
+closed loop again.
+
+- For a real drag whose selection is cleared on release, synchronously clone the live,
+  non-collapsed range in a `pointerup`/`mouseup` capture listener before page release handlers
+  can clear it. Restore from that saved clone at a later macrotask checkpoint. Do not use
+  `selectionchange` or a release timer as the only snapshot point. Scope this state to the active
+  drag; ordinary page clicks and control clicks must discard the stale range.
+- For primary `mousedown` or `selectstart` cancellation on non-control text targets, neutralize
+  page-owned `preventDefault()` at call time; a later listener cannot undo
+  `event.defaultPrevented`. Wrap cancelling DOM property handlers so their side effects still run
+  but a `return false` cannot cancel the gesture. Do not apply this gate to inputs, textareas,
+  buttons, links, selects, options, or contenteditable controls.
+- For paste rollback, mark the actual editable target during its `paste`/`beforeinput`
+  transaction and protect that same target at the next `input` capture regardless of
+  `InputEvent.data` or `inputType`. Use a short-lived instance `value` setter guard, or an
+  equivalently validated mechanism, so native insertion can complete while a page rollback
+  assignment is rejected. Remove the guard after the transaction so later editing remains
+  normal; do not read the clipboard or the control's existing value.
+- For overlays, use geometry-based overlap detection or reliably rescan when an offscreen target
+  enters the viewport. A one-time `elementFromPoint()`/`elementsFromPoint()` check at insertion
+  time is insufficient.
+
 ## Success criteria
 
 - [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements.
 - [criterion:text-selection] Selected text remains selected despite `user-select: none`, `unselectable=on`, primary `mousedown` cancellation, or `selectstart` cancellation. Standard-mode tests must independently model both the `mousedown` and `selectstart` blocker families.
 - [criterion:selection-dismissal] After page text has been selected, a later real primary-button click on another ordinary page area collapses the selection instead of restoring a stale saved range, including when `selectionchange` timing briefly exposes the old range during the new click.
 - [criterion:keyboard-copy] Ctrl/Cmd+C and Ctrl/Cmd+X keydown handlers cannot cancel the shortcut before the browser's copy or cut default behavior occurs. Tests must independently cover listener cancellation through `preventDefault()` and DOM `onkeydown` property cancellation through `return false`.
-- [criterion:paste] Paste reaches editable controls through the browser's native default action and the inserted value remains after the resulting `beforeinput` and `input` events, without page handlers blocking or rolling it back. The paste workflow must remain un-cancelled. Cross-world rollback recovery may reapply `InputEvent.data` only after native insertion and page handlers have run, without reading clipboard contents or the control's existing value.
+- [criterion:paste] Paste reaches editable controls through the browser's native default action and the inserted value remains after the resulting `beforeinput` and `input` events, without page handlers blocking or rolling it back. The paste workflow must remain un-cancelled and must also work when the resulting `input` event has null `data` and no paste-specific `inputType`, without reading clipboard contents or the control's existing value.
 - [criterion:pointer-overlays] Empty blocking overlays and `pointer-events: none` targets are repaired for images, video, canvas, input, textarea, and editable controls. Tests must independently include canvas as well as media/editable targets. Include a target that exists when the restoration script starts and an empty covering overlay appended afterward; the underlying target must become the hit-test result. Also cover an initially offscreen target and overlay so implementations cannot rely only on `elementFromPoint()` at insertion time; repair must be geometry-based or reliably rerun when the target enters the viewport.
 - [criterion:selection-visibility] Page styles cannot leave only a changed text color while the selection background remains transparent, even through a higher-specificity ID-scoped `::selection { background: transparent !important }` rule. Tests must use `id-ancestor` specificity and independently assert a non-transparent selection background.
 - [criterion:preserve-controls] After page text has been selected, a real primary-button click into an ordinary link, button, input, textarea, or editable field discards the stale page selection; the clicked control keeps focus and its input, editing, navigation, and left-click behavior still work.
