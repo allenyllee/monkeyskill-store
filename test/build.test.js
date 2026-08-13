@@ -81,6 +81,14 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
   assert.match(demo, /#method-12 :not\(input\):not\(textarea\)::selection \{ color: inherit !important; background: transparent !important; \}/);
   assert.doesNotMatch(demo, /id="method-12"[\s\S]*?<div class="target no-select">/);
   assert.match(demo, /Dark Reader 等色彩擴充可能干擾此項/);
+  assert.match(demo, /demo-i18n\.js/);
+  const demoI18n = await readFile(new URL("../dist/skills/restore-right-click/demo/demo-i18n.js", import.meta.url), "utf8");
+  assert.match(demoI18n, /"zh-Hant"/);
+  assert.match(demoI18n, /\ben:\s*\{/);
+  assert.match(demoI18n, /navigator\.languages/);
+  assert.match(demoI18n, /searchParams\.get\("lang"\)/);
+  assert.match(demoI18n, /data-locale/);
+  assert.doesNotMatch(demoI18n, /localStorage|sessionStorage/);
 });
 
 test("restore-right-click retains closed-loop implementation constraints in its MSkill", async () => {
@@ -117,6 +125,11 @@ test("Store presents both test sources as TestSpecs", async () => {
   assert.match(source, /Builder TestSpec:/);
   assert.match(source, /Independent TestSpec:/);
   assert.doesNotMatch(source, /Builder self-tests:|Independent tests:/);
+});
+
+test("Store carries its selected locale into Demo links", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /demoUrl\.searchParams\.set\("lang", locale\)/);
 });
 
 test("Store cards can safely expand their human-readable Skill content", async () => {

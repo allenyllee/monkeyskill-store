@@ -9,6 +9,10 @@ The Store contains specifications, not generated JavaScript. The Extension first
 security gate. Only the required `allow/reject` differential result reaches Builder; the Extension
 then runs both TestSpecs locally and asks for explicit approval before installation.
 
+The Store and its published functional Demo share Traditional Chinese and English locale routing.
+Demo links carry the Store's current locale; a directly opened Demo falls back to the browser
+language and also provides its own language switch without using persistent browser storage.
+
 ## Development methodology
 
 MSkills follow an evidence-driven generative development process. Begin with a minimal,

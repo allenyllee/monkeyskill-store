@@ -202,6 +202,7 @@ function renderCatalog() {
     if (skill.demoUrl) {
       const demoUrl = new URL(skill.demoUrl, location.href);
       if (demoUrl.origin === location.origin) {
+        demoUrl.searchParams.set("lang", locale);
         demo.href = demoUrl.href;
         demo.hidden = false;
       }

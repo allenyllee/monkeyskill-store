@@ -7,7 +7,7 @@
     <style>
       * { box-sizing: border-box; }
       body { max-width: 1040px; margin: 42px auto; padding: 0 22px 60px; color: #17211b; background: #f3f6f1; font: 15px/1.55 system-ui, sans-serif; }
-      header { margin-bottom: 20px; }
+      header { position: relative; margin-bottom: 20px; }
       h1 { margin: 0; font-size: clamp(28px, 5vw, 42px); letter-spacing: -.04em; }
       h2, p { margin: 0; }
       .intro { max-width: 760px; margin-top: 8px; color: #5d6961; }
@@ -41,7 +41,11 @@
       .result.info { color: #2e6491; }
       .checklist { margin-top: 18px; padding: 16px 20px; border-radius: 13px; color: #eff6ea; background: #17211b; }
       .checklist strong { color: #c8f24f; }
+      .language-switch { position: absolute; top: 0; right: 0; display: flex; gap: 6px; padding: 4px; border: 1px solid #dbe3d9; border-radius: 999px; background: #fff; }
+      .language-switch button { border: 0; border-radius: 999px; padding: 6px 10px; color: #526057; background: transparent; font: 700 12px/1 system-ui, sans-serif; cursor: pointer; }
+      .language-switch button[aria-pressed="true"] { color: #17211b; background: #d7ff69; }
       @media (max-width: 760px) {
+        header { padding-top: 46px; }
         .case { grid-template-columns: 44px 1fr; }
         .number { grid-row: span 2; }
         .description { border-right: 0; border-bottom: 1px solid #e4e9e2; }
@@ -50,6 +54,10 @@
   </head>
   <body>
     <header>
+      <div class="language-switch" role="group" aria-label="Language">
+        <button type="button" data-locale="zh-Hant">中文</button>
+        <button type="button" data-locale="en">EN</button>
+      </div>
       <h1>MonkeySkill 16-method Test Matrix</h1>
       <p class="intro">先關閉 Skill 確認阻擋存在，再依序測試 Standard 與 Absolute。紅色訊息代表頁面的阻擋器實際收到事件。</p>
       <div class="legend">
@@ -160,10 +168,11 @@
 
     <div class="checklist"><strong>判讀方式：</strong> Standard 著重一般事件攔截；Absolute 處理 pointer-events、overlay、持續清除選取與 paste rollback；Method 16 只展示 Chrome 原生差異。</div>
 
+    <script src="./demo-i18n.js"></script>
     <script>
       const result = number => document.querySelector(`#result-${number}`);
       const markBlocked = (number, message) => {
-        result(number).textContent = message;
+        result(number).textContent = window.demoI18n.blocked(number, message);
         result(number).className = "result blocked";
       };
       const stop = (number, message) => event => {
@@ -183,7 +192,7 @@
       document.querySelector("#method-3 input").addEventListener("paste", stop(3, "paste listener 阻擋了貼上"));
       document.querySelector("#method-4 img").addEventListener("contextmenu", stop(4, "image listener 阻擋了右鍵"));
       document.querySelector("#method-5 img").addEventListener("contextmenu", event => {
-        alert("Context menu is blocked");
+        alert(window.demoI18n.alertMessage());
         stop(5, "alert handler 阻擋了右鍵")(event);
       }, true);
       document.querySelector("#method-7 .overlay").addEventListener("contextmenu", stop(7, "overlay listener 阻擋了右鍵"));
