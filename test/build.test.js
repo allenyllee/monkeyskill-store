@@ -100,7 +100,7 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /neutralize[\s\S]*preventDefault\(\).*at call time/);
   assert.match(skill, /short-lived instance `value` setter guard/);
   assert.match(skill, /geometry-based overlap detection/);
-  assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*1000 ms/);
+  assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*400 ms[\s\S]*1000 ms/);
   assert.match(skill, /ignore mutations caused only by the Skill's own style or marker updates/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
 });

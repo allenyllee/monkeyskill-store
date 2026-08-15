@@ -36,7 +36,7 @@
 - Paste rollback 必須在 `paste`／`beforeinput` 標記實際 editable target，並在下一個 `input` capture 保護同一 target，不得依賴 `InputEvent.data` 或 `inputType`。短生命週期 instance `value` setter guard 或等效機制須讓原生插入先完成、拒絕 rollback，並在 resulting input checkpoint 與下一個 task 後精確還原 descriptor。
 - Overlay 必須使用 geometry overlap 或在 offscreen target 進入 viewport 時可靠重掃；插入當下只做一次 `elementFromPoint()` 不足。
 - 可見選取不能只覆寫 ID ancestor 自身的 `::selection`。必須以非透明、`!important`、高於 page ID-scoped descendant 規則的 selector 命中相關 ID ancestor 下的 descendants，並處理新增的 ID 或 descendant；不得硬編碼測試 fixture IDs。
-- 大型單頁應用上的動態修復必須有界。將 mutation 工作批次化或 debounce，只檢查新增／變動 subtree，並忽略 Skill 自身 style 或 marker 更新造成的 mutation；不得對每筆 mutation 同步重掃整份 document、無條件重寫 style，或形成 observer 自我觸發迴圈。可信 Runner 以 20 批加入 200 個帶 ID 的資料列時，下一個 browser task 必須在 1000 ms 內執行。符合相同回應性與功能條件的增量實作皆可接受。
+- 大型單頁應用上的動態修復必須有界。將 mutation 工作批次化或 debounce，只檢查新增／變動 subtree，並忽略 Skill 自身 style 或 marker 更新造成的 mutation；不得對每筆 mutation 同步重掃整份 document、無條件重寫 style，或形成 observer 自我觸發迴圈。可信 Runner 以 20 批加入 200 個帶 ID 的資料列時，下一個 browser task 必須在 400 ms 內執行，為真實瀏覽器 1000 ms 的驗收上限保留餘裕。符合相同回應性與功能條件的增量實作皆可接受。
 
 ## 成功條件
 
@@ -48,5 +48,5 @@
 - [criterion:pointer-overlays] 修復 image、video、canvas、input、textarea、editable control 的空 overlay 與 `pointer-events:none`，包括動態與 offscreen 情境。
 - [criterion:selection-visibility] 即使頁面使用高 specificity ID-scoped `::selection { background:transparent !important }`，被選取文字仍有非透明背景。
 - [criterion:preserve-controls] 選取頁面文字後點擊 link、button、input、textarea 或 editable field，舊 Range 會丟棄，而 control 仍保有正常 focus、編輯、導航與左鍵行為。
-- [criterion:dynamic-performance] Standard 與 Absolute 在持續動態 DOM 變動下仍須保持回應。可信 Runner 以 20 批加入 200 個帶 ID 的資料列時，必須在 1000 ms 內完成，不得進入 observer 自我觸發迴圈，且一般頁面互動仍可立即回應。真實 Demo 壓力測試不得持續顯示忙碌游標或造成數秒主執行緒停頓。
+- [criterion:dynamic-performance] Standard 與 Absolute 在持續動態 DOM 變動下仍須保持回應。可信 Runner 以 20 批加入 200 個帶 ID 的資料列時，必須在 400 ms 內完成，為真實瀏覽器 1000 ms 的驗收上限保留餘裕；不得進入 observer 自我觸發迴圈，且一般頁面互動仍可立即回應。真實 Demo 壓力測試必須在 1000 ms 內完成，不得持續顯示忙碌游標或造成數秒主執行緒停頓。
 - [criterion:no-network] 實作不發出任何網路請求。
