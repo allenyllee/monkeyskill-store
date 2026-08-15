@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MonkeySkill 17-method Test Matrix</title>
+    <title>MonkeySkill 18-method Test Matrix</title>
     <style>
       * { box-sizing: border-box; }
       body { max-width: 1040px; margin: 42px auto; padding: 0 22px 60px; color: #17211b; background: #f3f6f1; font: 15px/1.55 system-ui, sans-serif; }
@@ -43,6 +43,9 @@
       .stress-controls button { border: 0; border-radius: 8px; padding: 9px 13px; color: #17211b; background: #d7ff69; font: 750 12px/1 system-ui, sans-serif; cursor: pointer; }
       .stress-controls button:disabled { cursor: wait; opacity: .65; }
       .stress-feed { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+      .scroll-stress-viewport { max-height: 180px; margin-top: 10px; overflow: auto; border: 1px solid #dbe3d9; border-radius: 8px; }
+      .scroll-stress-row { position: relative; height: 24px; }
+      .scroll-stress-row input, .scroll-stress-row .overlay { position: absolute; inset: 2px 8px; min-height: 20px; }
       .checklist { margin-top: 18px; padding: 16px 20px; border-radius: 13px; color: #eff6ea; background: #17211b; }
       .checklist strong { color: #c8f24f; }
       .language-switch { position: absolute; top: 0; right: 0; display: flex; gap: 6px; padding: 4px; border: 1px solid #dbe3d9; border-radius: 999px; background: #fff; }
@@ -62,7 +65,7 @@
         <button type="button" data-locale="zh-Hant">中文</button>
         <button type="button" data-locale="en">EN</button>
       </div>
-      <h1>MonkeySkill 17-method Test Matrix</h1>
+      <h1>MonkeySkill 18-method Test Matrix</h1>
       <p class="intro">先關閉 Skill 確認阻擋存在，再依序測試 Standard 與 Absolute。紅色訊息代表頁面的阻擋器實際收到事件。</p>
       <div class="legend">
         <span class="off">關閉：應被阻擋</span>
@@ -173,6 +176,12 @@
         <div class="number">17</div>
         <div class="description"><h2>Dynamic DOM responsiveness</h2><p>20 batches append 200 ID-bearing rows</p><span class="mode absolute">Standard + Absolute</span></div>
         <div class="fixture"><div class="stress-controls"><button id="run-dynamic-stress" type="button">Run responsiveness check</button></div><div id="dynamic-stress-feed" class="stress-feed" aria-hidden="true"></div><p id="result-17" class="result">Waiting for interaction…</p></div>
+      </section>
+
+      <section class="case" id="method-18">
+        <div class="number">18</div>
+        <div class="description"><h2>Large-page scroll responsiveness</h2><p>300 controls and overlays across 10 scroll frames</p><span class="mode absolute">Standard + Absolute</span></div>
+        <div class="fixture"><div class="stress-controls"><button id="run-scroll-stress" type="button">Run scroll check</button></div><div id="scroll-stress-viewport" class="scroll-stress-viewport" aria-hidden="true"></div><p id="result-18" class="result">Waiting for interaction…</p></div>
       </section>
     </main>
 
@@ -285,6 +294,39 @@
         result(17).textContent = window.demoI18n.performanceResult(elapsed, passed);
         result(17).className = passed ? "result passed" : "result blocked";
         stressButton.disabled = false;
+      });
+
+      const scrollStressButton = document.querySelector("#run-scroll-stress");
+      const scrollStressViewport = document.querySelector("#scroll-stress-viewport");
+      scrollStressButton.addEventListener("click", async () => {
+        scrollStressButton.disabled = true;
+        scrollStressViewport.replaceChildren();
+        result(18).textContent = window.demoI18n.scrollPerformanceRunning();
+        result(18).className = "result info";
+        const fragment = document.createDocumentFragment();
+        for (let index = 0; index < 300; index += 1) {
+          const row = document.createElement("div");
+          row.className = "scroll-stress-row";
+          const input = document.createElement("input");
+          input.value = `row ${index}`;
+          input.readOnly = true;
+          const overlay = document.createElement("div");
+          overlay.className = "overlay";
+          row.append(input, overlay);
+          fragment.append(row);
+        }
+        scrollStressViewport.append(fragment);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const started = performance.now();
+        for (let index = 0; index < 10; index += 1) {
+          scrollStressViewport.scrollTop = index % 2 ? 0 : scrollStressViewport.scrollHeight;
+          await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+        }
+        const elapsed = Math.round(performance.now() - started);
+        const passed = elapsed <= 1000;
+        result(18).textContent = window.demoI18n.scrollPerformanceResult(elapsed, passed);
+        result(18).className = passed ? "result passed" : "result blocked";
+        scrollStressButton.disabled = false;
       });
     </script>
   </body>

@@ -66,15 +66,18 @@ test("Store labels a disguised non-executable security sample without leaking th
   assert.match(source, /Test security gate/);
 });
 
-test("restore-right-click publishes its complete 17-method demo with the MSkill", async () => {
+test("restore-right-click publishes its complete 18-method demo with the MSkill", async () => {
   await buildStore();
   const demo = await readFile(new URL("../dist/skills/restore-right-click/demo/index.html", import.meta.url), "utf8");
-  for (let method = 1; method <= 17; method += 1) assert.match(demo, new RegExp(`id="method-${method}"`));
+  for (let method = 1; method <= 18; method += 1) assert.match(demo, new RegExp(`id="method-${method}"`));
   assert.match(demo, /id="standard-target"/);
   assert.match(demo, /id="absolute-target"/);
   assert.match(demo, /id="background-image-target"/);
   assert.match(demo, /removeAllRanges/);
   assert.match(demo, /event\.key\.toLowerCase\(\) !== "c"/);
+  assert.match(demo, /id="run-scroll-stress"/);
+  assert.match(demo, /for \(let index = 0; index < 300; index \+= 1\)/);
+  assert.match(demo, /for \(let index = 0; index < 10; index \+= 1\)/);
   assert.match(demo, /url\("\.\/test-background\.svg"\)/);
   assert.doesNotMatch(demo, /src="\/test-background\.svg|url\(["']?\/test-background\.svg/);
   assert.equal((demo.match(/src="\.\/test-background\.svg"/g) || []).length, 5);
@@ -102,6 +105,8 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /geometry-based overlap detection/);
   assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*400 ms[\s\S]*1000 ms/);
   assert.match(skill, /ignore mutations caused only by the Skill's own style or marker updates/);
+  assert.match(skill, /Do not query all generic[\s\S]*elements[\s\S]*on each `scroll` event/);
+  assert.match(skill, /`scroll-stress`[\s\S]*300[\s\S]*10 scroll frames[\s\S]*400 ms/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
 });
 
