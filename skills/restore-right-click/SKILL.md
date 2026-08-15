@@ -74,6 +74,14 @@ closed loop again.
   relevant existing and dynamically inserted ID-bearing ancestor, with specificity exceeding
   the page's ID-scoped descendant rule. Reapply this rule set when IDs or relevant descendants
   are added. A fixed list of test fixture IDs or ancestor-only selectors is not acceptable.
+- Keep dynamic repair bounded on large single-page applications. Batch or debounce mutation work,
+  inspect added or changed subtrees instead of rescanning the full document for every record, and
+  ignore mutations caused only by the Skill's own style or marker updates. A burst of 200
+  ID-bearing rows in 20 batches must yield to the next browser task within 1000 ms in the trusted
+  Runner, and the real dynamic-performance Demo must stop showing a busy cursor promptly. Do not
+  use a continuously self-triggering observer, synchronous whole-document geometry scan, or
+  unconditional style rewrite. Equivalent incremental implementations are acceptable when they
+  meet the same responsiveness and functional criteria.
 
 ## Success criteria
 
@@ -85,4 +93,5 @@ closed loop again.
 - [criterion:pointer-overlays] Empty blocking overlays and `pointer-events: none` targets are repaired for images, video, canvas, input, textarea, and editable controls. Tests must independently include canvas as well as media/editable targets. Include a target that exists when the restoration script starts and an empty covering overlay appended afterward; the underlying target must become the hit-test result. Also cover an initially offscreen target and overlay so implementations cannot rely only on `elementFromPoint()` at insertion time; repair must be geometry-based or reliably rerun when the target enters the viewport.
 - [criterion:selection-visibility] Page styles cannot leave only a changed text color while the selection background remains transparent, even through a higher-specificity ID-scoped `::selection { background: transparent !important }` rule. Tests must use `id-ancestor` specificity and independently assert a non-transparent selection background.
 - [criterion:preserve-controls] After page text has been selected, a real primary-button click into an ordinary link, button, input, textarea, or editable field discards the stale page selection; the clicked control keeps focus and its input, editing, navigation, and left-click behavior still work.
+- [criterion:dynamic-performance] Standard and Absolute remain responsive during sustained dynamic DOM changes. A trusted `mutation-burst` of 200 ID-bearing rows in 20 batches completes within 1000 ms, does not enter a self-triggering observer loop, and leaves ordinary page interaction responsive. The real Demo stress method must complete without a persistent busy cursor or multi-second main-thread stalls.
 - [criterion:no-network] The implementation makes no network requests.

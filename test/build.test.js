@@ -66,10 +66,10 @@ test("Store labels a disguised non-executable security sample without leaking th
   assert.match(source, /Test security gate/);
 });
 
-test("restore-right-click publishes its complete 16-method demo with the MSkill", async () => {
+test("restore-right-click publishes its complete 17-method demo with the MSkill", async () => {
   await buildStore();
   const demo = await readFile(new URL("../dist/skills/restore-right-click/demo/index.html", import.meta.url), "utf8");
-  for (let method = 1; method <= 16; method += 1) assert.match(demo, new RegExp(`id="method-${method}"`));
+  for (let method = 1; method <= 17; method += 1) assert.match(demo, new RegExp(`id="method-${method}"`));
   assert.match(demo, /id="standard-target"/);
   assert.match(demo, /id="absolute-target"/);
   assert.match(demo, /id="background-image-target"/);
@@ -82,6 +82,8 @@ test("restore-right-click publishes its complete 16-method demo with the MSkill"
   assert.doesNotMatch(demo, /id="method-12"[\s\S]*?<div class="target no-select">/);
   assert.match(demo, /Dark Reader 等色彩擴充可能干擾此項/);
   assert.match(demo, /demo-i18n\.js/);
+  assert.match(demo, /id="run-dynamic-stress"/);
+  assert.match(demo, /elapsed <= 1000/);
   const demoI18n = await readFile(new URL("../dist/skills/restore-right-click/demo/demo-i18n.js", import.meta.url), "utf8");
   assert.match(demoI18n, /"zh-Hant"/);
   assert.match(demoI18n, /\ben:\s*\{/);
@@ -98,6 +100,8 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /neutralize[\s\S]*preventDefault\(\).*at call time/);
   assert.match(skill, /short-lived instance `value` setter guard/);
   assert.match(skill, /geometry-based overlap detection/);
+  assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*1000 ms/);
+  assert.match(skill, /ignore mutations caused only by the Skill's own style or marker updates/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
 });
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MonkeySkill 16-method Test Matrix</title>
+    <title>MonkeySkill 17-method Test Matrix</title>
     <style>
       * { box-sizing: border-box; }
       body { max-width: 1040px; margin: 42px auto; padding: 0 22px 60px; color: #17211b; background: #f3f6f1; font: 15px/1.55 system-ui, sans-serif; }
@@ -39,6 +39,10 @@
       .result.blocked { color: #a03535; font-weight: 750; }
       .result.passed { color: #34711f; font-weight: 750; }
       .result.info { color: #2e6491; }
+      .stress-controls { display: flex; align-items: center; gap: 10px; }
+      .stress-controls button { border: 0; border-radius: 8px; padding: 9px 13px; color: #17211b; background: #d7ff69; font: 750 12px/1 system-ui, sans-serif; cursor: pointer; }
+      .stress-controls button:disabled { cursor: wait; opacity: .65; }
+      .stress-feed { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
       .checklist { margin-top: 18px; padding: 16px 20px; border-radius: 13px; color: #eff6ea; background: #17211b; }
       .checklist strong { color: #c8f24f; }
       .language-switch { position: absolute; top: 0; right: 0; display: flex; gap: 6px; padding: 4px; border: 1px solid #dbe3d9; border-radius: 999px; background: #fff; }
@@ -58,7 +62,7 @@
         <button type="button" data-locale="zh-Hant">中文</button>
         <button type="button" data-locale="en">EN</button>
       </div>
-      <h1>MonkeySkill 16-method Test Matrix</h1>
+      <h1>MonkeySkill 17-method Test Matrix</h1>
       <p class="intro">先關閉 Skill 確認阻擋存在，再依序測試 Standard 與 Absolute。紅色訊息代表頁面的阻擋器實際收到事件。</p>
       <div class="legend">
         <span class="off">關閉：應被阻擋</span>
@@ -164,6 +168,12 @@
         <div class="description"><h2>CSS background image</h2><p>普通元素使用 background-image</p><span class="mode native">Native</span></div>
         <div class="fixture"><div id="background-image-target" class="background-target" role="img" aria-label="CSS 背景圖片測試"></div><p id="result-16" class="result info">右鍵應開啟，但「另存新檔」會儲存 HTML，因為它不是 img。</p></div>
       </section>
+
+      <section class="case" id="method-17">
+        <div class="number">17</div>
+        <div class="description"><h2>Dynamic DOM responsiveness</h2><p>20 batches append 200 ID-bearing rows</p><span class="mode absolute">Standard + Absolute</span></div>
+        <div class="fixture"><div class="stress-controls"><button id="run-dynamic-stress" type="button">Run responsiveness check</button></div><div id="dynamic-stress-feed" class="stress-feed" aria-hidden="true"></div><p id="result-17" class="result">Waiting for interaction…</p></div>
+      </section>
     </main>
 
     <div class="checklist"><strong>判讀方式：</strong> Standard 著重一般事件攔截；Absolute 處理 pointer-events、overlay、持續清除選取與 paste rollback；Method 16 只展示 Chrome 原生差異。</div>
@@ -245,6 +255,37 @@
       context.beginPath();
       context.arc(64, 64, 42, 0, Math.PI * 2);
       context.fill();
+
+      const stressButton = document.querySelector("#run-dynamic-stress");
+      const stressFeed = document.querySelector("#dynamic-stress-feed");
+      let stressRun = 0;
+      stressButton.addEventListener("click", async () => {
+        stressButton.disabled = true;
+        stressFeed.replaceChildren();
+        result(17).textContent = window.demoI18n.performanceRunning();
+        result(17).className = "result info";
+        const started = performance.now();
+        stressRun += 1;
+        for (let batch = 0; batch < 20; batch += 1) {
+          const fragment = document.createDocumentFragment();
+          for (let index = 0; index < 10; index += 1) {
+            const row = document.createElement("div");
+            row.id = `dynamic-stress-${stressRun}-${batch}-${index}`;
+            const text = document.createElement("span");
+            text.textContent = `row ${batch * 10 + index}`;
+            row.append(text);
+            fragment.append(row);
+          }
+          stressFeed.append(fragment);
+          await Promise.resolve();
+        }
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const elapsed = Math.round(performance.now() - started);
+        const passed = elapsed <= 1000;
+        result(17).textContent = window.demoI18n.performanceResult(elapsed, passed);
+        result(17).className = passed ? "result passed" : "result blocked";
+        stressButton.disabled = false;
+      });
     </script>
   </body>
 </html>
