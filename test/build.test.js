@@ -86,13 +86,14 @@ test("restore-right-click publishes its complete 18-method demo with the MSkill"
   assert.match(demo, /#method-12 :not\(input\):not\(textarea\)::selection \{ color: inherit !important; background: transparent !important; \}/);
   assert.doesNotMatch(demo, /id="method-12"[\s\S]*?<div class="target no-select">/);
   assert.match(demo, /Dark Reader 等色彩擴充可能干擾此項/);
-  assert.match(demo, /demo-i18n\.js\?v=5/);
+  assert.match(demo, /demo-i18n\.js\?v=6/);
   assert.match(demo, /reportCancellationOutcome/);
   assert.match(demo, /if \(event\.defaultPrevented\)/);
   assert.doesNotMatch(demo, /event\.preventDefault\(\);\s*markBlocked\(11,/);
   assert.match(demo, /window\.demoI18n\.nativeTarget\(label\)/);
   assert.match(demo, /if \(event\.target\.value === pastedValue\)/);
   assert.match(demo, /window\.demoI18n\.pastePreserved\(\)/);
+  assert.match(demo, /markBlocked\(5, "alert handler 執行並阻擋了右鍵"\)/);
   assert.match(demo, /id="run-dynamic-stress"/);
   assert.match(demo, /elapsed <= 1000/);
   const demoI18n = await readFile(new URL("../dist/skills/restore-right-click/demo/demo-i18n.js", import.meta.url), "utf8");
@@ -133,7 +134,8 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /Skill-Off baseline[\s\S]*500 ms[\s\S]*1\.5 times/);
   assert.match(skill, /live `DocumentFragment`[\s\S]*do not run `querySelectorAll\(\)` separately[\s\S]*every added generic root/i);
   assert.match(skill, /Do not replace[\s\S]*EventTarget\.prototype\.addEventListener/);
-  assert.match(skill, /late handlers must assert both a call count of one[\s\S]*defaultPrevented === false/);
+  assert.match(skill, /flag-only` late context-menu test[\s\S]*call count zero[\s\S]*uncancelled event/);
+  assert.match(skill, /Other[\s\S]*protected listeners[\s\S]*call count one[\s\S]*defaultPrevented === false/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
 });
 

@@ -6,7 +6,7 @@ Restore the browser context menu, text selection, copying, cutting, pasting, and
 
 ## Standard mode
 
-- Stop page handlers from cancelling `contextmenu`, `copy`, `cut`, `selectstart`, and `dragstart`, including primary-button `mousedown` handlers that cancel native text selection and `keydown` handlers that cancel Ctrl/Cmd+C or Ctrl/Cmd+X before the copy/cut event occurs. This includes DOM property handlers such as `element.onkeydown = fn` that cancel by returning `false`, not only listeners that call `preventDefault()`.
+- Let native `contextmenu` proceed while stopping the page-owned context-menu dispatch before disruptive handler side effects such as alerts run. For `copy`, `cut`, `selectstart`, and `dragstart`, neutralize cancellation while preserving ordinary non-cancelling behavior, including primary-button `mousedown` handlers that cancel native text selection and `keydown` handlers that cancel Ctrl/Cmd+C or Ctrl/Cmd+X before the copy/cut event occurs. This includes DOM property handlers such as `element.onkeydown = fn` that cancel by returning `false`, not only listeners that call `preventDefault()`.
 - Remove equivalent inline event-handler attributes.
 - Remove inline mouse/pointer handlers only when their source explicitly cancels the event.
 - Restore text selection only where the page explicitly disables it.
@@ -67,15 +67,18 @@ closed loop again.
 - Preserve the browser's event-registration APIs in both modes. Do not replace
   `EventTarget.prototype.addEventListener` or `removeEventListener`, and do not silently discard
   future `contextmenu`, `copy`, `cut`, `selectstart`, `dragstart`, paste, mouse, or pointer
-  listeners. A protected listener or DOM property handler registered after the Skill starts must
-  still run and retain its non-cancelling side effects; neutralize only its attempt to cancel the
-  protected native operation. Tests for late handlers must assert both a call count of one and
-  `event.defaultPrevented === false`.
+  registrations. For `contextmenu`, stop page delivery at the earliest event checkpoint without
+  cancelling the browser default, so an alert or other disruptive page side effect does not run;
+  a `flag-only` late context-menu test must observe call count zero and an uncancelled event. Other
+  protected listeners and DOM property handlers registered after the Skill starts must still run
+  and retain their non-cancelling side effects; neutralize only their attempt to cancel the
+  protected native operation, with tests asserting call count one and `event.defaultPrevented === false`.
 - Do not replace `Event.prototype.preventDefault` page-wide. A permanent prototype wrapper affects
   every unrelated event dispatched by a large application, composes unpredictably with page and
   extension wrappers, and can leave an existing tab unresponsive. If cancellation must be
   neutralized at call time, shadow `preventDefault` only on the specific protected event instance
-  at the earliest capture checkpoint, preserve the page handler's invocation and side effects,
+  at the earliest capture checkpoint, preserve the page handler's invocation and side effects
+  except for the explicit context-menu suppression above,
   and remove that instance override after dispatch. Ordinary events must retain their original
   prototype method and cancellation behavior.
 - For paste rollback, mark the actual editable target during its `paste`/`beforeinput`
@@ -153,7 +156,7 @@ closed loop again.
 
 ## Success criteria
 
-- [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements. In both modes, a context-menu listener or DOM property handler registered after the Skill starts still executes exactly once and retains non-cancelling side effects while its cancellation is neutralized. The implementation must not replace the global EventTarget registration methods or discard page listeners.
+- [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements without running disruptive page context-menu side effects such as an alert. In both modes, a late `flag-only` context-menu listener or DOM property handler must remain registered but observe call count zero while the trusted dispatch remains uncancelled. The implementation must not replace the global EventTarget registration methods, must not cancel the browser default, and must not suppress unrelated left-click or control behavior.
 - [criterion:text-selection] Selected text remains selected despite `user-select: none`, `unselectable=on`, primary `mousedown` cancellation, or `selectstart` cancellation. Standard-mode tests must independently model both the `mousedown` and `selectstart` blocker families. An Absolute release-clear test must also assert `selection-write-count` at `lte 5` for its `drag-select-text` step so deferred recovery cannot redundantly rewrite an already-live Range and lock the page.
 - [criterion:selection-dismissal] After page text has been selected, a later real primary-button click on another ordinary page area collapses the selection instead of restoring a stale saved range, including when `selectionchange` timing briefly exposes the old range during the new click. The same test must then drag-select a different text target and observe a new non-collapsed selection, proving that recovery state and event guards no longer block subsequent interaction.
 - [criterion:keyboard-copy] Ctrl/Cmd+C and Ctrl/Cmd+X keydown handlers cannot cancel the shortcut before the browser's copy or cut default behavior occurs. Tests must independently cover listener cancellation through `preventDefault()` and DOM `onkeydown` property cancellation through `return false`.
