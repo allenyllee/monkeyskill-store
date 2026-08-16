@@ -143,6 +143,13 @@ test("local development Store can request an automated Extension reload", async 
   assert.match(source, /history\.replaceState/);
 });
 
+test("local development Store can inspect durable generation state", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /inspect-workflow/);
+  assert.match(source, /rpc\("status", skillId/);
+  assert.match(source, /rpc\("pending", skillId/);
+});
+
 test("Store presents both test sources as TestSpecs", async () => {
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
   assert.match(source, /Builder TestSpec:/);

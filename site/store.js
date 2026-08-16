@@ -121,7 +121,31 @@ function markExtensionReady() {
   connection.textContent = t("ready");
   connection.classList.add("ready");
   void setTestModeForLocalDevelopment();
+  void inspectWorkflowForLocalDevelopment();
   void refreshInstalled();
+}
+
+async function inspectWorkflowForLocalDevelopment() {
+  const local = location.protocol === "http:"
+    && ["127.0.0.1", "localhost"].includes(location.hostname)
+    && location.port === "4174";
+  const url = new URL(location.href);
+  const skillId = url.searchParams.get("inspect-workflow");
+  if (!local || !skillId) return;
+  url.searchParams.delete("inspect-workflow");
+  history.replaceState(null, "", url);
+  const [status, pending] = await Promise.all([
+    rpc("status", skillId, {}, 3000),
+    rpc("pending", skillId, {}, 3000)
+  ]);
+  const draft = pending?.draft;
+  showNotice(JSON.stringify({
+    state: status?.job?.state || null,
+    error: status?.job?.error || null,
+    pending: Boolean(draft),
+    hash: draft?.generation?.hash?.slice(0, 16) || null,
+    attempts: draft?.generation?.attempts || null
+  }), !status?.ok || !pending?.ok);
 }
 
 async function setTestModeForLocalDevelopment() {
