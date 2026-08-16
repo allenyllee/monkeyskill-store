@@ -67,6 +67,13 @@ closed loop again.
   still run and retain its non-cancelling side effects; neutralize only its attempt to cancel the
   protected native operation. Tests for late handlers must assert both a call count of one and
   `event.defaultPrevented === false`.
+- Do not replace `Event.prototype.preventDefault` page-wide. A permanent prototype wrapper affects
+  every unrelated event dispatched by a large application, composes unpredictably with page and
+  extension wrappers, and can leave an existing tab unresponsive. If cancellation must be
+  neutralized at call time, shadow `preventDefault` only on the specific protected event instance
+  at the earliest capture checkpoint, preserve the page handler's invocation and side effects,
+  and remove that instance override after dispatch. Ordinary events must retain their original
+  prototype method and cancellation behavior.
 - For paste rollback, mark the actual editable target during its `paste`/`beforeinput`
   transaction and protect that same target at the next `input` capture regardless of
   `InputEvent.data` or `inputType`. Use a short-lived instance `value` setter guard, or an
