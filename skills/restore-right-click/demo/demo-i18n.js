@@ -31,7 +31,7 @@ const translations = {
     restored: "成功：Skill 在 removeAllRanges 後恢復選取",
     performance: { running: "正在加入動態資料列…", passed: ms => `成功：${ms} ms 內完成，頁面保持回應`, failed: ms => `失敗：耗時 ${ms} ms，動態修復阻塞頁面` },
     scrollPerformance: { running: "正在建立大型頁面並測試捲動…", passed: ms => `成功：10 個捲動 frame 在 ${ms} ms 內完成`, failed: ms => `失敗：10 個捲動 frame 耗時 ${ms} ms` },
-    alert: "右鍵選單已被阻擋"
+    alert: "頁面的 alert handler 已執行；關閉此視窗後，請確認原生右鍵選單是否仍會出現。"
   },
   en: {
     title: "MonkeySkill 18-method Test Matrix",
@@ -65,7 +65,7 @@ const translations = {
     restored: "Passed: the Skill restored selection after removeAllRanges",
     performance: { running: "Appending dynamic rows…", passed: ms => `Passed: completed in ${ms} ms and remained responsive`, failed: ms => `Failed: ${ms} ms; dynamic repair blocked the page` },
     scrollPerformance: { running: "Building a large page and testing scroll…", passed: ms => `Passed: 10 scroll frames completed in ${ms} ms`, failed: ms => `Failed: 10 scroll frames took ${ms} ms` },
-    alert: "The context menu is blocked"
+    alert: "The page alert handler ran. After closing this dialog, verify that the native context menu still appears."
   }
 };
 
@@ -151,6 +151,21 @@ window.demoI18n = Object.freeze({
     return locale === "zh-Hant"
       ? `完成：10 個捲動 frame 耗時 ${elapsed} ms；請與同裝置的 Skill-Off 基線比較`
       : `Completed: 10 scroll frames took ${elapsed} ms; compare with the Skill-Off baseline on this device`;
+  },
+  nativeTarget(label) {
+    if (locale === "zh-Hant") {
+      return label === "canvas"
+        ? "通過：contextmenu 的實際目標是 canvas；原生選單應提供「將圖片另存為」。"
+        : "通過：contextmenu 的實際目標是圖片；原生選單應提供「將圖片另存為」。";
+    }
+    return label === "canvas"
+      ? "Passed: the contextmenu target is the canvas; the native menu should offer Save image as."
+      : "Passed: the contextmenu target is the image; the native menu should offer Save image as.";
+  },
+  pastePreserved() {
+    return locale === "zh-Hant"
+      ? "通過：input handler 嘗試還原內容，但 Skill 保留了實際貼上的文字。"
+      : "Passed: the input handler attempted a rollback, but the Skill preserved the pasted text.";
   },
   alertMessage() { return translations[locale].alert; }
 });
