@@ -150,11 +150,4 @@ window.demoI18n = Object.freeze({
   alertMessage() { return translations[locale].alert; }
 });
 
-new MutationObserver(records => {
-  for (const record of records) {
-    const node = record.target;
-    if (node.id === "result-10" && node.classList.contains("passed")) node.textContent = window.demoI18n.restored();
-  }
-}).observe(document.querySelector(".matrix"), { subtree: true, childList: true, attributes: true, attributeFilter: ["class"] });
-
 applyLocale();

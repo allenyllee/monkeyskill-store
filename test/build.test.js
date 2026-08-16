@@ -96,6 +96,7 @@ test("restore-right-click publishes its complete 18-method demo with the MSkill"
   assert.match(demoI18n, /searchParams\.get\("lang"\)/);
   assert.match(demoI18n, /data-locale/);
   assert.doesNotMatch(demoI18n, /localStorage|sessionStorage/);
+  assert.doesNotMatch(demoI18n, /MutationObserver[\s\S]*result-10/, "Method 10 status localization must not observe and rewrite its own text.");
 });
 
 test("restore-right-click retains closed-loop implementation constraints in its MSkill", async () => {
