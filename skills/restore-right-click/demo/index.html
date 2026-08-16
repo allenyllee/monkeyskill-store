@@ -187,23 +187,33 @@
 
     <div class="checklist"><strong>判讀方式：</strong> Standard 著重一般事件攔截；Absolute 處理 pointer-events、overlay、持續清除選取與 paste rollback；Method 16 只展示 Chrome 原生差異。</div>
 
-    <script src="./demo-i18n.js?v=3"></script>
+    <script src="./demo-i18n.js?v=4"></script>
     <script>
       const result = number => document.querySelector(`#result-${number}`);
       const markBlocked = (number, message) => {
         result(number).textContent = window.demoI18n.blocked(number, message);
         result(number).className = "result blocked";
       };
+      const reportCancellationOutcome = (number, message, event) => {
+        setTimeout(() => {
+          if (event.defaultPrevented) {
+            markBlocked(number, message);
+            return;
+          }
+          result(number).textContent = window.demoI18n.neutralized();
+          result(number).className = "result passed";
+        }, 0);
+      };
       const stop = (number, message) => event => {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        markBlocked(number, message);
+        reportCancellationOutcome(number, message, event);
       };
 
       window.blockInline = (event, number) => {
         event.preventDefault();
-        markBlocked(number, "inline handler 阻擋了右鍵");
+        reportCancellationOutcome(number, "inline handler 阻擋了右鍵", event);
         return false;
       };
 
@@ -267,7 +277,7 @@
         const shortcut = event.ctrlKey || event.metaKey;
         if (!shortcut || event.key.toLowerCase() !== "c") return;
         event.preventDefault();
-        markBlocked(11, "keydown handler 阻擋了 Ctrl/Cmd+C");
+        reportCancellationOutcome(11, "keydown handler 阻擋了 Ctrl/Cmd+C", event);
         return false;
       };
 

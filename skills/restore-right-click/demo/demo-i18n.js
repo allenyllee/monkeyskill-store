@@ -2,7 +2,7 @@ const translations = {
   "zh-Hant": {
     title: "MonkeySkill 18 種方法測試矩陣",
     language: "語言",
-    intro: "先關閉 Skill 確認阻擋存在，再依序測試 Standard 與 Absolute。紅色訊息代表頁面的阻擋器實際收到事件。",
+    intro: "先關閉 Skill 確認阻擋存在，再依序測試 Standard 與 Absolute。紅色代表預設行為真的被取消；綠色代表頁面 handler 有執行，但 Skill 已中和取消並保留原生行為。",
     legend: ["關閉：應被阻擋", "Standard：一般事件阻擋", "Absolute：結構型／持續阻擋", "Native：瀏覽器原生差異"],
     methods: [
       ["行內事件阻擋", "oncontextmenu + onmousedown return false", "選取、複製並在這裡按右鍵。"],
@@ -36,7 +36,7 @@ const translations = {
   en: {
     title: "MonkeySkill 18-method Test Matrix",
     language: "Language",
-    intro: "Disable the Skill first to confirm each blocker, then test Standard and Absolute in order. Red messages mean the page blocker actually received the event.",
+    intro: "Disable the Skill first to confirm each blocker, then test Standard and Absolute in order. Red means the native default was actually cancelled; green means the page handler ran but the Skill neutralized cancellation and preserved native behavior.",
     legend: ["Off: expected to be blocked", "Standard: ordinary event blockers", "Absolute: structural and persistent blockers", "Native: browser-native differences"],
     methods: [
       ["Inline event blocking", "oncontextmenu + onmousedown return false", "Select, copy, and open the context menu here."],
@@ -126,6 +126,11 @@ for (const button of document.querySelectorAll("[data-locale]")) button.addEvent
 
 window.demoI18n = Object.freeze({
   blocked(number, fallback) { return translations[locale].blocked[number] || fallback; },
+  neutralized() {
+    return locale === "zh-Hant"
+      ? "通過：頁面 handler 有執行，但 Skill 已中和取消並保留瀏覽器預設行為。"
+      : "Passed: the page handler ran, but the Skill neutralized cancellation and preserved the browser default.";
+  },
   restored() { return translations[locale].restored; },
   method10NextTarget() {
     return locale === "zh-Hant" ? "最後請拖曳選取這一段不同的文字。" : "Finally, drag-select this different passage.";
