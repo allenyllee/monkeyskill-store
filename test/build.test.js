@@ -72,6 +72,8 @@ test("restore-right-click publishes its complete 18-method demo with the MSkill"
   for (let method = 1; method <= 18; method += 1) assert.match(demo, new RegExp(`id="method-${method}"`));
   assert.match(demo, /id="standard-target"/);
   assert.match(demo, /id="absolute-target"/);
+  assert.match(demo, /absolute-next-target/);
+  assert.match(demo, /selectionStage === "dismissed"/);
   assert.match(demo, /id="background-image-target"/);
   assert.match(demo, /removeAllRanges/);
   assert.match(demo, /event\.key\.toLowerCase\(\) !== "c"/);
@@ -103,6 +105,8 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /Do not replace `Event\.prototype\.preventDefault` page-wide/);
   assert.match(skill, /selection-write-count[\s\S]*at most 5/);
   assert.match(skill, /already non-collapsed[\s\S]*do not call[\s\S]*removeAllRanges/);
+  assert.match(skill, /Do not mark a recovery checkpoint complete[\s\S]*verified as non-collapsed/);
+  assert.match(skill, /drag-select a different text target[\s\S]*new non-collapsed selection/);
   assert.match(skill, /neutralize[\s\S]*preventDefault\(\).*at call time/);
   assert.match(skill, /short-lived instance `value` setter guard/);
   assert.match(skill, /geometry-based overlap detection/);

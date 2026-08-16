@@ -52,7 +52,11 @@ closed loop again.
   checkpoint must be idempotent: if the live selection is already non-collapsed, do not call
   `removeAllRanges()` and `addRange()` again merely to reapply the same saved Range. A page clear
   may justify another restore, but redundant rewrites while the Range is already live can lock the
-  browser's selection pipeline. In the release-clear test, use `selection-write-count` on the
+  browser's selection pipeline. Do not mark a recovery checkpoint complete until `addRange()` has
+  returned and the live Selection has been verified as non-collapsed. If that verification fails or
+  the write throws, a later bounded checkpoint must still be able to retry. After the bounded
+  recovery window, discard the saved Range, gesture, release record, and timers so a later click or
+  drag starts from clean state. In the release-clear test, use `selection-write-count` on the
   `drag-select-text` step and require at most 5 total Selection API writes (trusted initial select,
   one page clear, and one Skill restore).
 - For primary `mousedown` or `selectstart` cancellation on non-control text targets, neutralize
@@ -149,7 +153,7 @@ closed loop again.
 
 - [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements. In both modes, a context-menu listener or DOM property handler registered after the Skill starts still executes exactly once and retains non-cancelling side effects while its cancellation is neutralized. The implementation must not replace the global EventTarget registration methods or discard page listeners.
 - [criterion:text-selection] Selected text remains selected despite `user-select: none`, `unselectable=on`, primary `mousedown` cancellation, or `selectstart` cancellation. Standard-mode tests must independently model both the `mousedown` and `selectstart` blocker families. An Absolute release-clear test must also assert `selection-write-count` at `lte 5` for its `drag-select-text` step so deferred recovery cannot redundantly rewrite an already-live Range and lock the page.
-- [criterion:selection-dismissal] After page text has been selected, a later real primary-button click on another ordinary page area collapses the selection instead of restoring a stale saved range, including when `selectionchange` timing briefly exposes the old range during the new click.
+- [criterion:selection-dismissal] After page text has been selected, a later real primary-button click on another ordinary page area collapses the selection instead of restoring a stale saved range, including when `selectionchange` timing briefly exposes the old range during the new click. The same test must then drag-select a different text target and observe a new non-collapsed selection, proving that recovery state and event guards no longer block subsequent interaction.
 - [criterion:keyboard-copy] Ctrl/Cmd+C and Ctrl/Cmd+X keydown handlers cannot cancel the shortcut before the browser's copy or cut default behavior occurs. Tests must independently cover listener cancellation through `preventDefault()` and DOM `onkeydown` property cancellation through `return false`.
 - [criterion:paste] Paste reaches editable controls through the browser's native default action and the inserted value remains after the resulting `beforeinput` and `input` events, without page handlers blocking or rolling it back. The paste workflow must remain un-cancelled and must also work when the resulting `input` event has null `data` and no paste-specific `inputType`, without reading clipboard contents or the control's existing value.
 - [criterion:pointer-overlays] Empty blocking overlays and `pointer-events: none` targets are repaired for images, video, canvas, input, textarea, and editable controls. Tests must independently include canvas as well as media/editable targets. Include a target that exists when the restoration script starts and an empty covering overlay appended afterward; the underlying target must become the hit-test result. Also cover an initially offscreen target and overlay so implementations cannot rely only on `elementFromPoint()` at insertion time; repair must be geometry-based or reliably rerun when the target enters the viewport.

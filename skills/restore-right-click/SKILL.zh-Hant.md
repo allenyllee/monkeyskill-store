@@ -31,7 +31,7 @@
 
 以下限制來自多輪 clean-room 生成與真實瀏覽器閉環。可以使用等效實作，但必須涵蓋相同 checkpoint、不降低安全限制，並重新通過完整閉環。
 
-- 真實拖曳在 release 被清除時，必須在 `pointerup`／`mouseup` capture listener 中同步保存仍存活、非 collapsed 的 Range，再於後續 macrotask 恢復；不能只依賴 `selectionchange` 或 release timer。每個延後恢復 checkpoint 必須 idempotent：目前 selection 已非 collapsed 時，不得再次呼叫 `removeAllRanges()`／`addRange()` 重套同一 Range。頁面再次清除後可以再恢復，但 selection 已存在時的多餘重寫可能鎖死瀏覽器選取流程。release-clear 測試必須對 `drag-select-text` step 使用 `selection-write-count` 並要求 `lte 5`，涵蓋可信初始選取、一次頁面清除與一次 Skill 恢復。
+- 真實拖曳在 release 被清除時，必須在 `pointerup`／`mouseup` capture listener 中同步保存仍存活、非 collapsed 的 Range，再於後續 macrotask 恢復；不能只依賴 `selectionchange` 或 release timer。每個延後恢復 checkpoint 必須 idempotent：目前 selection 已非 collapsed 時，不得再次呼叫 `removeAllRanges()`／`addRange()` 重套同一 Range。頁面再次清除後可以再恢復，但 selection 已存在時的多餘重寫可能鎖死瀏覽器選取流程。只有在 `addRange()` 已回傳且即時重新檢查 Selection 確實為非 collapsed 後，才能把恢復 checkpoint 標記完成；若寫入失敗、丟出例外或沒有生效，後續有限次 checkpoint 仍必須能重試。恢復視窗結束後必須清除保存的 Range、gesture、release record 與 timers，讓後續點擊及新拖曳從乾淨狀態開始。release-clear 測試必須對 `drag-select-text` step 使用 `selection-write-count` 並要求 `lte 5`，涵蓋可信初始選取、一次頁面清除與一次 Skill 恢復。
 - 對非 control 文字目標的 `mousedown`／`selectstart` cancellation，必須在呼叫當下中和 page-owned `preventDefault()`；property handler 的副作用仍須執行，但 `return false` 不得取消 gesture。
 - 兩種模式都必須保留瀏覽器原本的事件註冊 API。不得改寫 `EventTarget.prototype.addEventListener` 或 `removeEventListener`，也不得靜默丟棄之後註冊的 `contextmenu`、`copy`、`cut`、`selectstart`、`dragstart`、paste、mouse 或 pointer listener。Skill 啟動後才註冊的 protected listener 或 DOM property handler 仍須執行一次並保留非取消性的副作用，只能中和它取消受保護原生操作的嘗試。late-handler 測試必須同時斷言 call count 為一且 `event.defaultPrevented === false`。
 - 不得在整個頁面替換 `Event.prototype.preventDefault`。永久 prototype wrapper 會介入大型應用程式的每個無關事件，與頁面或其他擴充的 wrapper 疊加時可能讓既有分頁失去回應。若必須在呼叫當下中和取消，只能在最早 capture checkpoint 暫時 shadow 該次受保護 event instance 的 `preventDefault`，仍須讓頁面 handler 執行並保留副作用，dispatch 結束後移除 instance override；一般事件必須繼續使用原本的 prototype method 與取消語義。
@@ -46,7 +46,7 @@
 
 - [criterion:context-menu] 使用者可在一般元素、input、image、overlay 與 CSS background 元素開啟原生右鍵選單。兩種模式中，Skill 啟動後才註冊的 context-menu listener 或 DOM property handler 都必須恰好執行一次並保留非取消性的副作用，只中和取消行為；實作不得改寫全域 EventTarget 註冊方法或丟棄頁面 listener。
 - [criterion:text-selection] 即使存在 `user-select:none`、`unselectable=on`、primary `mousedown` 或 `selectstart` cancellation，文字仍可選取並保持選取。Absolute release-clear 測試還必須在 `drag-select-text` step 斷言 `selection-write-count lte 5`，避免延後恢復對已存在的 Range 重複寫入並鎖死頁面。
-- [criterion:selection-dismissal] 選取頁面文字後，再點擊一般區域會正常折疊選取，不會恢復過期 Range。
+- [criterion:selection-dismissal] 選取頁面文字後，再點擊另一個一般區域會正常折疊選取，不會恢復過期 Range；同一測試接著必須能拖曳選取另一段不同文字並得到新的非 collapsed 選取，證明恢復狀態與事件保護已釋放，不會鎖住後續互動。
 - [criterion:keyboard-copy] Ctrl/Cmd+C 與 Ctrl/Cmd+X 不會被 listener `preventDefault()` 或 DOM `onkeydown` 的 `return false` 提前取消。
 - [criterion:paste] Paste 透過瀏覽器原生 default action 抵達 editable control，且插入內容能抵抗 `beforeinput`／`input` rollback；即使 resulting input 沒有 data 或 paste-specific inputType 也成立。
 - [criterion:pointer-overlays] 修復 image、video、canvas、input、textarea、editable control 的空 overlay 與 `pointer-events:none`，包括動態與 offscreen 情境。

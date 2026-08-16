@@ -218,10 +218,17 @@
       document.querySelector("#method-9 .target").addEventListener("selectstart", stop(9, "selectstart 阻擋了選取"), true);
 
       const selectionTarget = document.querySelector("#absolute-target");
+      const nextSelectionTarget = document.createElement("div");
+      nextSelectionTarget.id = "absolute-next-target";
+      nextSelectionTarget.className = "target no-select";
+      nextSelectionTarget.textContent = window.demoI18n.method10NextTarget();
+      selectionTarget.insertAdjacentElement("afterend", nextSelectionTarget);
+      let selectionStage = "waiting";
       const clearSelection = () => {
         const selection = document.getSelection();
         if (!selection || selection.isCollapsed || !selectionTarget.contains(selection.anchorNode)) return;
         markBlocked(10, "removeAllRanges 清除了選取");
+        selectionStage = "recovering";
         selection.removeAllRanges();
         setTimeout(() => {
           const restored = document.getSelection();
@@ -230,12 +237,31 @@
             && selectionTarget.contains(restored.focusNode);
           if (!insideTarget) return;
           result(10).textContent = "通過：Skill 在 removeAllRanges 後恢復了選取";
-          result(10).className = "result passed";
+          selectionStage = "restored";
+          result(10).textContent = window.demoI18n.method10Restored();
+          result(10).className = "result info";
         }, 300);
       };
       for (const type of ["mouseup", "keyup", "contextmenu", "touchend"]) {
         selectionTarget.addEventListener(type, clearSelection);
       }
+      document.addEventListener("selectionchange", () => {
+        const selection = document.getSelection();
+        if (selectionStage === "restored" && (!selection || selection.isCollapsed)) {
+          selectionStage = "dismissed";
+          result(10).textContent = window.demoI18n.method10Dismissed();
+          result(10).className = "result info";
+          return;
+        }
+        const insideNext = selection && !selection.isCollapsed
+          && nextSelectionTarget.contains(selection.anchorNode)
+          && nextSelectionTarget.contains(selection.focusNode);
+        if (selectionStage === "dismissed" && insideNext) {
+          selectionStage = "complete";
+          result(10).textContent = window.demoI18n.method10Passed();
+          result(10).className = "result passed";
+        }
+      });
 
       document.querySelector("#method-11 input").onkeydown = event => {
         const shortcut = event.ctrlKey || event.metaKey;

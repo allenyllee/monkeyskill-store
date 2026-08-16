@@ -127,6 +127,18 @@ for (const button of document.querySelectorAll("[data-locale]")) button.addEvent
 window.demoI18n = Object.freeze({
   blocked(number, fallback) { return translations[locale].blocked[number] || fallback; },
   restored() { return translations[locale].restored; },
+  method10NextTarget() {
+    return locale === "zh-Hant" ? "最後請拖曳選取這一段不同的文字。" : "Finally, drag-select this different passage.";
+  },
+  method10Restored() {
+    return locale === "zh-Hant" ? "步驟 1/3：已在 removeAllRanges 後恢復選取；現在請點擊其他一般區域。" : "Step 1/3: selection restored after removeAllRanges; now click another ordinary page area.";
+  },
+  method10Dismissed() {
+    return locale === "zh-Hant" ? "步驟 2/3：舊選取已正常折疊；現在請拖曳選取下方的另一段文字。" : "Step 2/3: the stale selection collapsed; now drag-select the different passage below.";
+  },
+  method10Passed() {
+    return locale === "zh-Hant" ? "通過：恢復、清除與後續新選取皆正常。" : "Passed: restore, dismissal, and a subsequent fresh selection all work.";
+  },
   performanceRunning() { return translations[locale].performance.running; },
   performanceResult(elapsed, passed) { return translations[locale].performance[passed ? "passed" : "failed"](elapsed); },
   scrollPerformanceRunning() { return translations[locale].scrollPerformance.running; },
