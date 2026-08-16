@@ -86,7 +86,7 @@ test("restore-right-click publishes its complete 18-method demo with the MSkill"
   assert.match(demo, /#method-12 :not\(input\):not\(textarea\)::selection \{ color: inherit !important; background: transparent !important; \}/);
   assert.doesNotMatch(demo, /id="method-12"[\s\S]*?<div class="target no-select">/);
   assert.match(demo, /Dark Reader 等色彩擴充可能干擾此項/);
-  assert.match(demo, /demo-i18n\.js/);
+  assert.match(demo, /demo-i18n\.js\?v=3/);
   assert.match(demo, /id="run-dynamic-stress"/);
   assert.match(demo, /elapsed <= 1000/);
   const demoI18n = await readFile(new URL("../dist/skills/restore-right-click/demo/demo-i18n.js", import.meta.url), "utf8");
