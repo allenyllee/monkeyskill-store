@@ -157,9 +157,15 @@ test("Store presents both test sources as TestSpecs", async () => {
   assert.doesNotMatch(source, /Builder self-tests:|Independent tests:/);
 });
 
-test("Store carries its selected locale into Demo links", async () => {
+test("Store carries its selected locale into Demo links and reloads stale local Demo runtimes", async () => {
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
   assert.match(source, /demoUrl\.searchParams\.set\("lang", locale\)/);
+  assert.match(source, /announceLocalRuntimeChange\(skillId, "mode"\)/);
+  assert.match(source, /announceLocalRuntimeChange\(draft\.skillId, "install"\)/);
+  const demoI18n = await readFile(new URL("../skills/restore-right-click/demo/demo-i18n.js", import.meta.url), "utf8");
+  assert.match(demoI18n, /monkeyskill-local-runtime-change/);
+  assert.match(demoI18n, /change\.skillId === "restore-right-click"/);
+  assert.match(demoI18n, /location\.reload\(\)/);
 });
 
 test("Store cards can safely expand their human-readable Skill content", async () => {

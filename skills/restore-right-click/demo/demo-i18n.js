@@ -70,9 +70,18 @@ const translations = {
 };
 
 const requestedLocale = new URL(location.href).searchParams.get("lang");
+const LOCAL_RUNTIME_CHANGE_KEY = "monkeyskill-local-runtime-change";
 let locale = requestedLocale
   || (navigator.languages?.some(language => /^zh(?:-|$)/i.test(language)) ? "zh-Hant" : "en");
 if (!translations[locale]) locale = "en";
+
+window.addEventListener("storage", event => {
+  if (event.key !== LOCAL_RUNTIME_CHANGE_KEY || !event.newValue) return;
+  try {
+    const change = JSON.parse(event.newValue);
+    if (change.skillId === "restore-right-click") location.reload();
+  } catch {}
+});
 
 function applyLocale() {
   const text = translations[locale];

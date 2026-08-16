@@ -11,6 +11,7 @@ const dialogDetails = document.querySelector("#dialog-details");
 const dialogConfirm = document.querySelector("#dialog-confirm");
 const pendingRequests = new Map();
 const instructionCache = new Map();
+const LOCAL_RUNTIME_CHANGE_KEY = "monkeyskill-local-runtime-change";
 const messages = {
   "zh-Hant": {
     connecting: "正在連線至 Extension…", ready: "Extension 已連線", missing: "未偵測到 MonkeySkill Extension",
@@ -37,8 +38,10 @@ const localizedSkill = skill => ({ ...skill, ...(skill.localized?.[locale] || sk
 
 if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
   window.monkeySkillClosedLoop = Object.freeze({
-    setMode(skillId, mode) {
-      return rpc("set-test-mode", skillId, { mode }, 3000);
+    async setMode(skillId, mode) {
+      const response = await rpc("set-test-mode", skillId, { mode }, 3000);
+      if (response?.ok) announceLocalRuntimeChange(skillId, "mode");
+      return response;
     }
   });
 }
@@ -160,7 +163,12 @@ async function setTestModeForLocalDevelopment() {
   url.searchParams.delete("skill-id");
   history.replaceState(null, "", url);
   const response = await rpc("set-test-mode", skillId, { mode }, 3000);
+  if (response?.ok) announceLocalRuntimeChange(skillId, "mode");
   showNotice(response?.ok ? `${skillId} test mode: ${mode}` : response?.error || "Mode switch failed.", !response?.ok);
+}
+
+function announceLocalRuntimeChange(skillId, reason) {
+  localStorage.setItem(LOCAL_RUNTIME_CHANGE_KEY, JSON.stringify({ skillId, reason, at: Date.now() }));
 }
 
 async function initialize() {
@@ -335,6 +343,9 @@ async function reviewDraft(draft) {
   if (!response.ok) throw new Error(response.error);
   installed.set(draft.skillId, response.skill);
   renderCatalog();
+  if (["127.0.0.1", "localhost"].includes(location.hostname)) {
+    announceLocalRuntimeChange(draft.skillId, "install");
+  }
   showNotice(`${draft.skillName} 已安裝。`, false);
 }
 
