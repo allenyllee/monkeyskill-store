@@ -31,7 +31,7 @@
 
 以下限制來自多輪 clean-room 生成與真實瀏覽器閉環。可以使用等效實作，但必須涵蓋相同 checkpoint、不降低安全限制，並重新通過完整閉環。
 
-- 真實拖曳在 release 被清除時，必須在 `pointerup`／`mouseup` capture listener 中同步保存仍存活、非 collapsed 的 Range，再於後續 macrotask 恢復；不能只依賴 `selectionchange` 或 release timer。
+- 真實拖曳在 release 被清除時，必須在 `pointerup`／`mouseup` capture listener 中同步保存仍存活、非 collapsed 的 Range，再於後續 macrotask 恢復；不能只依賴 `selectionchange` 或 release timer。每個延後恢復 checkpoint 必須 idempotent：目前 selection 已非 collapsed 時，不得再次呼叫 `removeAllRanges()`／`addRange()` 重套同一 Range。頁面再次清除後可以再恢復，但 selection 已存在時的多餘重寫可能鎖死瀏覽器選取流程。release-clear 測試必須對 `drag-select-text` step 使用 `selection-write-count` 並要求 `lte 5`，涵蓋可信初始選取、一次頁面清除與一次 Skill 恢復。
 - 對非 control 文字目標的 `mousedown`／`selectstart` cancellation，必須在呼叫當下中和 page-owned `preventDefault()`；property handler 的副作用仍須執行，但 `return false` 不得取消 gesture。
 - 註冊邊界必須依模式區分。Standard 中，既有 protected handler 可以執行並保留副作用，只中和取消行為；Absolute 中，Skill 啟動後才註冊的 `contextmenu`、`copy`、`cut`、`selectstart`、`dragstart`、paste-specific listener 或 DOM property handler 必須直接忽略，handler body 完全不得執行，blocker call count 必須維持零。不得先 wrap、呼叫 late Absolute handler，再只抑制其回傳值。
 - Paste rollback 必須在 `paste`／`beforeinput` 標記實際 editable target，並在下一個 `input` capture 保護同一 target，不得依賴 `InputEvent.data` 或 `inputType`。短生命週期 instance `value` setter guard 或等效機制須讓原生插入先完成、拒絕 rollback，並在 resulting input checkpoint 與下一個 task 後精確還原 descriptor。
@@ -44,7 +44,7 @@
 ## 成功條件
 
 - [criterion:context-menu] 使用者可在一般元素、input、image、overlay 與 CSS background 元素開啟原生右鍵選單。Absolute 中，Skill 啟動後才註冊的 context-menu listener 或 DOM property handler 必須被忽略且 body 不執行；Standard 中，既有 handler 可保留非取消性的副作用，只中和取消行為。
-- [criterion:text-selection] 即使存在 `user-select:none`、`unselectable=on`、primary `mousedown` 或 `selectstart` cancellation，文字仍可選取並保持選取。
+- [criterion:text-selection] 即使存在 `user-select:none`、`unselectable=on`、primary `mousedown` 或 `selectstart` cancellation，文字仍可選取並保持選取。Absolute release-clear 測試還必須在 `drag-select-text` step 斷言 `selection-write-count lte 5`，避免延後恢復對已存在的 Range 重複寫入並鎖死頁面。
 - [criterion:selection-dismissal] 選取頁面文字後，再點擊一般區域會正常折疊選取，不會恢復過期 Range。
 - [criterion:keyboard-copy] Ctrl/Cmd+C 與 Ctrl/Cmd+X 不會被 listener `preventDefault()` 或 DOM `onkeydown` 的 `return false` 提前取消。
 - [criterion:paste] Paste 透過瀏覽器原生 default action 抵達 editable control，且插入內容能抵抗 `beforeinput`／`input` rollback；即使 resulting input 沒有 data 或 paste-specific inputType 也成立。

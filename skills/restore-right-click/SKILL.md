@@ -48,7 +48,13 @@ closed loop again.
   non-collapsed range in a `pointerup`/`mouseup` capture listener before page release handlers
   can clear it. Restore from that saved clone at a later macrotask checkpoint. Do not use
   `selectionchange` or a release timer as the only snapshot point. Scope this state to the active
-  drag; ordinary page clicks and control clicks must discard the stale range.
+  drag; ordinary page clicks and control clicks must discard the stale range. Each deferred
+  checkpoint must be idempotent: if the live selection is already non-collapsed, do not call
+  `removeAllRanges()` and `addRange()` again merely to reapply the same saved Range. A page clear
+  may justify another restore, but redundant rewrites while the Range is already live can lock the
+  browser's selection pipeline. In the release-clear test, use `selection-write-count` on the
+  `drag-select-text` step and require at most 5 total Selection API writes (trusted initial select,
+  one page clear, and one Skill restore).
 - For primary `mousedown` or `selectstart` cancellation on non-control text targets, neutralize
   page-owned `preventDefault()` at call time; a later listener cannot undo
   `event.defaultPrevented`. Wrap cancelling DOM property handlers so their side effects still run
@@ -134,7 +140,7 @@ closed loop again.
 ## Success criteria
 
 - [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements. In Absolute, a context-menu listener or DOM property handler registered after the Skill starts is ignored and its body is not called; in Standard, an existing handler may keep non-cancelling side effects while its cancellation is neutralized.
-- [criterion:text-selection] Selected text remains selected despite `user-select: none`, `unselectable=on`, primary `mousedown` cancellation, or `selectstart` cancellation. Standard-mode tests must independently model both the `mousedown` and `selectstart` blocker families.
+- [criterion:text-selection] Selected text remains selected despite `user-select: none`, `unselectable=on`, primary `mousedown` cancellation, or `selectstart` cancellation. Standard-mode tests must independently model both the `mousedown` and `selectstart` blocker families. An Absolute release-clear test must also assert `selection-write-count` at `lte 5` for its `drag-select-text` step so deferred recovery cannot redundantly rewrite an already-live Range and lock the page.
 - [criterion:selection-dismissal] After page text has been selected, a later real primary-button click on another ordinary page area collapses the selection instead of restoring a stale saved range, including when `selectionchange` timing briefly exposes the old range during the new click.
 - [criterion:keyboard-copy] Ctrl/Cmd+C and Ctrl/Cmd+X keydown handlers cannot cancel the shortcut before the browser's copy or cut default behavior occurs. Tests must independently cover listener cancellation through `preventDefault()` and DOM `onkeydown` property cancellation through `return false`.
 - [criterion:paste] Paste reaches editable controls through the browser's native default action and the inserted value remains after the resulting `beforeinput` and `input` events, without page handlers blocking or rolling it back. The paste workflow must remain un-cancelled and must also work when the resulting `input` event has null `data` and no paste-specific `inputType`, without reading clipboard contents or the control's existing value.

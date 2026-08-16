@@ -100,6 +100,8 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   const skill = await readFile(new URL("../skills/restore-right-click/SKILL.md", import.meta.url), "utf8");
   assert.match(skill, /## Validated implementation constraints/);
   assert.match(skill, /pointerup.*mouseup.*capture listener/s);
+  assert.match(skill, /selection-write-count[\s\S]*at most 5/);
+  assert.match(skill, /already non-collapsed[\s\S]*do not call[\s\S]*removeAllRanges/);
   assert.match(skill, /neutralize[\s\S]*preventDefault\(\).*at call time/);
   assert.match(skill, /short-lived instance `value` setter guard/);
   assert.match(skill, /geometry-based overlap detection/);
