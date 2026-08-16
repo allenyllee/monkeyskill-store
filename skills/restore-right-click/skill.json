@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "restore-right-click",
   "name": "Restore right click & copy",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "Restores the context menu, text selection, and copying on sites that block them.",
   "locales": {
     "zh-Hant": {

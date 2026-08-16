@@ -116,6 +116,7 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /startup must not recursively enqueue[\s\S]*`document\.documentElement`/);
   assert.match(skill, /Test all three workflows independently in both modes/);
   assert.match(skill, /Skill-Off baseline[\s\S]*500 ms[\s\S]*1\.5 times/);
+  assert.match(skill, /live `DocumentFragment`[\s\S]*do not run `querySelectorAll\(\)` separately[\s\S]*every added generic root/i);
   assert.match(skill, /In[\s\S]*Absolute,[\s\S]*registered after the Skill starts[\s\S]*must not[\s\S]*execute at all/);
   assert.match(skill, /blocker call count must remain zero/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
