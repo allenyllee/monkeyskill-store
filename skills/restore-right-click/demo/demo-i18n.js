@@ -21,11 +21,11 @@ const translations = {
       ["貼上回滾", "input event 在一次新增超過兩字時還原內容", "貼上三個字以上"],
       ["Canvas 與覆蓋層", "canvas pointer-events:none 且被 overlay 覆蓋", ""],
       ["CSS 背景圖片", "普通元素使用 background-image", "CSS 背景圖片測試"],
-      ["動態 DOM 回應性", "以 20 批加入 200 個帶 ID 的資料列", "執行回應性檢查"],
-      ["大型頁面捲動回應性", "300 組 control／overlay，連續 10 個 scroll frame", "執行捲動檢查"]
+      ["動態 DOM 回應性", "加入並持續變更 200 個帶 ID 的資料列，再等待排隊中的修復工作安靜", "執行回應性檢查"],
+      ["大型頁面捲動回應性", "300 組 control／overlay 與 10 個 scroll frame，包含 setup 與排隊中的修復工作", "執行捲動檢查"]
     ],
     waiting: "等待操作…",
-    hints: { 6: "右鍵目標應恢復成圖片。", 8: "右鍵目標應恢復成圖片。", 12: "拖曳選取並觀察反白底色；Dark Reader 等色彩擴充可能干擾此項。", 13: "Absolute 應讓 input 重新成為事件目標。", 15: "右鍵目標應恢復成 canvas。", 16: "右鍵應開啟，但「另存新檔」會儲存 HTML，因為它不是 img。", 17: "按下按鈕後應在 1000 ms 內完成，且游標不應持續呈現忙碌狀態。", 18: "應在 1000 ms 內完成，且原生滾輪捲動不能被延遲。" },
+    hints: { 6: "右鍵目標應恢復成圖片。", 8: "右鍵目標應恢復成圖片。", 12: "拖曳選取並觀察反白底色；Dark Reader 等色彩擴充可能干擾此項。", 13: "Absolute 應讓 input 重新成為事件目標。", 15: "右鍵目標應恢復成 canvas。", 16: "右鍵應開啟，但「另存新檔」會儲存 HTML，因為它不是 img。", 17: "計時包含排隊中的 observer 工作直到 DOM-quiet checkpoint，並應在 1000 ms 內完成。", 18: "計時包含 setup 與 scroll 觸發的 observer 工作，應在 1000 ms 內完成且不得延遲原生滾輪。" },
     checklist: "判讀方式：Standard 著重一般事件攔截；Absolute 處理 pointer-events、overlay、持續清除選取與 paste rollback；Method 16 只展示 Chrome 原生差異；Methods 17–18 驗證動態 DOM 與大型頁面捲動仍保持回應。",
     blocked: { 1: "inline handler 阻止右鍵", 2: "input listener 阻止右鍵", 3: "paste listener 阻止貼上", 4: "image listener 阻止右鍵", 5: "alert handler 阻止右鍵", 7: "overlay listener 阻止右鍵", 9: "selectstart 阻止選取", 10: "removeAllRanges 清除選取", 11: "keydown handler 阻止 Ctrl/Cmd+C", 14: "input handler 還原了貼上內容" },
     restored: "成功：Skill 在 removeAllRanges 後恢復選取",
@@ -55,11 +55,11 @@ const translations = {
       ["Paste rollback", "input event restores content when more than two characters are added", "Paste three or more characters"],
       ["Canvas + overlay", "canvas uses pointer-events:none under an overlay", ""],
       ["CSS background image", "Ordinary element uses background-image", "CSS background image test"],
-      ["Dynamic DOM responsiveness", "Append 200 ID-bearing rows in 20 batches", "Run responsiveness check"],
-      ["Large-page scroll responsiveness", "300 control/overlay pairs across 10 scroll frames", "Run scroll check"]
+      ["Dynamic DOM responsiveness", "Append and mutate 200 ID-bearing rows, then wait for queued repair work to become quiet", "Run responsiveness check"],
+      ["Large-page scroll responsiveness", "300 control/overlay pairs across 10 scroll frames, including setup and queued repair work", "Run scroll check"]
     ],
     waiting: "Waiting for interaction…",
-    hints: { 6: "The context-menu target should be the image again.", 8: "The context-menu target should be the image again.", 12: "Drag to select and inspect the highlight; color-transforming extensions such as Dark Reader may interfere.", 13: "Absolute should make the input the event target again.", 15: "The context-menu target should be the canvas again.", 16: "The context menu should open, but Save As stores HTML because this is not an img element.", 17: "The check should finish within 1000 ms without leaving a persistent busy cursor.", 18: "The check should finish within 1000 ms without delaying native wheel scrolling." },
+    hints: { 6: "The context-menu target should be the image again.", 8: "The context-menu target should be the image again.", 12: "Drag to select and inspect the highlight; color-transforming extensions such as Dark Reader may interfere.", 13: "Absolute should make the input the event target again.", 15: "The context-menu target should be the canvas again.", 16: "The context menu should open, but Save As stores HTML because this is not an img element.", 17: "The check includes queued observer work through a DOM-quiet checkpoint and should finish within 1000 ms.", 18: "The check includes setup and scroll-triggered observer work and should finish within 1000 ms without delaying native wheel scrolling." },
     checklist: "How to judge: Standard covers ordinary event interception. Absolute covers pointer-events, overlays, persistent selection removal, and paste rollback. Method 16 demonstrates a Chrome-native distinction; Methods 17–18 verify responsiveness under dynamic DOM changes and large-page scrolling.",
     blocked: { 1: "inline handler blocked the context menu", 2: "input listener blocked the context menu", 3: "paste listener blocked native paste", 4: "image listener blocked the context menu", 5: "alert handler blocked the context menu", 7: "overlay listener blocked the context menu", 9: "selectstart blocked selection", 10: "removeAllRanges cleared the selection", 11: "keydown handler blocked Ctrl/Cmd+C", 14: "input handler rolled back the pasted content" },
     restored: "Passed: the Skill restored selection after removeAllRanges",

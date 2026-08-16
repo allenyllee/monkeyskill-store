@@ -76,17 +76,22 @@ closed loop again.
   are added. A fixed list of test fixture IDs or ancestor-only selectors is not acceptable.
 - Keep dynamic repair bounded on large single-page applications. Batch or debounce mutation work,
   inspect added or changed subtrees instead of rescanning the full document for every record, and
-  ignore mutations caused only by the Skill's own style or marker updates. A burst of 200
-  ID-bearing rows in 20 batches must yield to the next browser task within 400 ms in the trusted
-  Runner, and the real dynamic-performance Demo must stop showing a busy cursor promptly. Do not
-  use a continuously self-triggering observer, synchronous whole-document geometry scan, or
-  unconditional style rewrite. Equivalent incremental implementations are acceptable when they
-  meet the same responsiveness and functional criteria.
+  ignore mutations caused only by the Skill's own style or marker updates. Startup work must also
+  be bounded independently of the existing page size: do not synchronously walk every element in
+  an already-large document or write inline selection styles to every ordinary element. Prefer a
+  broad stylesheet plus targeted blocker scans, or chunk unavoidable traversal across tasks. A
+  burst of 200 ID-bearing rows in 20 batches, including queued observer work through a trusted
+  DOM-quiet checkpoint, must complete within 400 ms in the Runner. The real dynamic-performance
+  Demo must stop showing a busy cursor promptly. Do not use a continuously self-triggering
+  observer, synchronous whole-document scan, or unconditional style rewrite. Equivalent
+  incremental implementations are acceptable when they meet the same responsiveness and
+  functional criteria.
 - Keep scroll handling bounded independently of total document size. Do not query all generic
   elements or compare every overlay candidate with every pointer target on each `scroll` event or
   animation frame. Maintain a bounded index of unresolved candidates, invalidate only affected
   geometry, and process viewport-relevant work incrementally. The trusted `scroll-stress` workflow
-  with 300 control/overlay pairs over 10 scroll frames must complete within 400 ms; the real Demo
+  includes candidate setup and scroll-triggered observer work through DOM-quiet checkpoints; with
+  300 control/overlay pairs over 10 scroll frames it must complete within 400 ms. The real Demo
   must complete within 1000 ms without delaying native wheel scrolling.
 
 ## Success criteria
@@ -99,5 +104,5 @@ closed loop again.
 - [criterion:pointer-overlays] Empty blocking overlays and `pointer-events: none` targets are repaired for images, video, canvas, input, textarea, and editable controls. Tests must independently include canvas as well as media/editable targets. Include a target that exists when the restoration script starts and an empty covering overlay appended afterward; the underlying target must become the hit-test result. Also cover an initially offscreen target and overlay so implementations cannot rely only on `elementFromPoint()` at insertion time; repair must be geometry-based or reliably rerun when the target enters the viewport.
 - [criterion:selection-visibility] Page styles cannot leave only a changed text color while the selection background remains transparent, even through a higher-specificity ID-scoped `::selection { background: transparent !important }` rule. Tests must use `id-ancestor` specificity and independently assert a non-transparent selection background.
 - [criterion:preserve-controls] After page text has been selected, a real primary-button click into an ordinary link, button, input, textarea, or editable field discards the stale page selection; the clicked control keeps focus and its input, editing, navigation, and left-click behavior still work.
-- [criterion:dynamic-performance] Standard and Absolute remain responsive during sustained dynamic DOM changes and native scrolling on large single-page applications. A trusted `mutation-burst` of 200 ID-bearing rows in 20 batches and a separate `scroll-stress` workflow with 300 control/overlay pairs over 10 scroll frames each complete within 400 ms, providing headroom for the real-browser acceptance limit of 1000 ms. The implementation does not enter a self-triggering observer loop, perform document-wide geometry cross-products on scroll, delay wheel scrolling, or leave ordinary page interaction unresponsive. Test both workflows independently in both modes. The real Demo stress methods must each complete within 1000 ms without a persistent busy cursor or multi-second main-thread stalls.
+- [criterion:dynamic-performance] Standard and Absolute remain responsive at startup, during sustained dynamic DOM changes, after queued observer repairs, and during native scrolling on large single-page applications. A trusted `mutation-burst` of 200 ID-bearing rows in 20 batches and a separate `scroll-stress` workflow with 300 control/overlay pairs over 10 scroll frames each include DOM-quiet checkpoints and complete within 400 ms, providing headroom for the real-browser acceptance limit of 1000 ms. The implementation does not synchronously walk every element of an already-large page, enter a self-triggering observer loop, perform document-wide geometry cross-products on scroll, delay wheel scrolling, or leave ordinary page interaction unresponsive. Test both workflows independently in both modes. The real Demo stress methods must each complete within 1000 ms without a persistent busy cursor or multi-second main-thread stalls.
 - [criterion:no-network] The implementation makes no network requests.

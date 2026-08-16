@@ -36,8 +36,8 @@
 - Paste rollback 必須在 `paste`／`beforeinput` 標記實際 editable target，並在下一個 `input` capture 保護同一 target，不得依賴 `InputEvent.data` 或 `inputType`。短生命週期 instance `value` setter guard 或等效機制須讓原生插入先完成、拒絕 rollback，並在 resulting input checkpoint 與下一個 task 後精確還原 descriptor。
 - Overlay 必須使用 geometry overlap 或在 offscreen target 進入 viewport 時可靠重掃；插入當下只做一次 `elementFromPoint()` 不足。
 - 可見選取不能只覆寫 ID ancestor 自身的 `::selection`。必須以非透明、`!important`、高於 page ID-scoped descendant 規則的 selector 命中相關 ID ancestor 下的 descendants，並處理新增的 ID 或 descendant；不得硬編碼測試 fixture IDs。
-- 大型單頁應用上的動態修復必須有界。將 mutation 工作批次化或 debounce，只檢查新增／變動 subtree，並忽略 Skill 自身 style 或 marker 更新造成的 mutation；不得對每筆 mutation 同步重掃整份 document、無條件重寫 style，或形成 observer 自我觸發迴圈。可信 Runner 以 20 批加入 200 個帶 ID 的資料列時，下一個 browser task 必須在 400 ms 內執行，為真實瀏覽器 1000 ms 的驗收上限保留餘裕。符合相同回應性與功能條件的增量實作皆可接受。
-- 捲動處理的成本必須與整份 document 的大小解耦。不得在每個 `scroll` event 或 animation frame 查詢所有一般元素，或把所有 overlay candidate 與所有 pointer target 做交叉幾何比較。應維護有界的未解決候選索引，只讓受影響的 geometry 失效，並增量處理 viewport 相關工作。可信 `scroll-stress` 工作流以 300 組 control／overlay 跑 10 個 scroll frame 時必須在 400 ms 內完成；真實 Demo 必須在 1000 ms 內完成，且不能延遲原生滾輪捲動。
+- 大型單頁應用上的動態修復必須有界。將 mutation 工作批次化或 debounce，只檢查新增／變動 subtree，並忽略 Skill 自身 style 或 marker 更新造成的 mutation。啟動成本也必須與既有頁面大小解耦：不得同步走訪大型 document 的每個元素，也不得替每個一般元素寫入 inline selection style；應優先使用廣域 stylesheet 加上針對 blocker 的 selector，或把不可避免的走訪切成多個 task。可信 Runner 以 20 批加入 200 個帶 ID 的資料列時，計時須包含排隊中的 observer 工作直到 DOM-quiet checkpoint，並在 400 ms 內完成。不得無條件重寫 style 或形成 observer 自我觸發迴圈。
+- 捲動處理的成本必須與整份 document 的大小解耦。不得在每個 `scroll` event 或 animation frame 查詢所有一般元素，或把所有 overlay candidate 與所有 pointer target 做交叉幾何比較。應維護有界的未解決候選索引，只讓受影響的 geometry 失效，並增量處理 viewport 相關工作。可信 `scroll-stress` 工作流的計時包含候選 setup 與 scroll 觸發的 observer 工作直到 DOM-quiet checkpoint；以 300 組 control／overlay 跑 10 個 scroll frame 時必須在 400 ms 內完成。真實 Demo 必須在 1000 ms 內完成，且不能延遲原生滾輪捲動。
 
 ## 成功條件
 
@@ -49,5 +49,5 @@
 - [criterion:pointer-overlays] 修復 image、video、canvas、input、textarea、editable control 的空 overlay 與 `pointer-events:none`，包括動態與 offscreen 情境。
 - [criterion:selection-visibility] 即使頁面使用高 specificity ID-scoped `::selection { background:transparent !important }`，被選取文字仍有非透明背景。
 - [criterion:preserve-controls] 選取頁面文字後點擊 link、button、input、textarea 或 editable field，舊 Range 會丟棄，而 control 仍保有正常 focus、編輯、導航與左鍵行為。
-- [criterion:dynamic-performance] Standard 與 Absolute 在持續動態 DOM 變動，以及大型單頁應用的原生捲動期間都須保持回應。可信 Runner 的 `mutation-burst`（20 批、200 個帶 ID 的資料列）與獨立 `scroll-stress`（300 組 control／overlay、10 個 scroll frame）都必須在 400 ms 內完成，為真實瀏覽器 1000 ms 的驗收上限保留餘裕。實作不得形成 observer 自我觸發迴圈、在 scroll 時做整份 document 的 geometry 交叉比較、延遲滾輪捲動，或讓一般頁面互動失去回應。兩種模式都要分別測試兩個工作流；真實 Demo 的兩項壓力測試也都必須在 1000 ms 內完成。
+- [criterion:dynamic-performance] Standard 與 Absolute 在啟動時、持續動態 DOM 變動、排隊中的 observer 修復完成前後，以及大型單頁應用的原生捲動期間都須保持回應。可信 Runner 的 `mutation-burst`（20 批、200 個帶 ID 的資料列）與獨立 `scroll-stress`（300 組 control／overlay、10 個 scroll frame）都包含 DOM-quiet checkpoint，並須在 400 ms 內完成，為真實瀏覽器 1000 ms 的驗收上限保留餘裕。實作不得同步走訪既有大型頁面的每個元素、形成 observer 自我觸發迴圈、在 scroll 時做整份 document 的 geometry 交叉比較、延遲滾輪捲動，或讓一般頁面互動失去回應。兩種模式都要分別測試兩個工作流；真實 Demo 的兩項壓力測試也都必須在 1000 ms 內完成。
 - [criterion:no-network] 實作不發出任何網路請求。

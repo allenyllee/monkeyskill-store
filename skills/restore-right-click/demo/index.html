@@ -267,6 +267,20 @@
 
       const stressButton = document.querySelector("#run-dynamic-stress");
       const stressFeed = document.querySelector("#dynamic-stress-feed");
+      const waitForDemoDomQuiet = (root, quietMs = 75, maxMs = 1500) => new Promise(resolve => {
+        const started = performance.now();
+        let lastMutation = started;
+        const observer = new MutationObserver(() => { lastMutation = performance.now(); });
+        observer.observe(root, { subtree: true, childList: true, attributes: true });
+        const check = () => {
+          const now = performance.now();
+          if (now - lastMutation >= quietMs || now - started >= maxMs) {
+            observer.disconnect();
+            resolve();
+          } else setTimeout(check, 10);
+        };
+        setTimeout(check, 10);
+      });
       let stressRun = 0;
       stressButton.addEventListener("click", async () => {
         stressButton.disabled = true;
@@ -275,6 +289,7 @@
         result(17).className = "result info";
         const started = performance.now();
         stressRun += 1;
+        const quiet = waitForDemoDomQuiet(stressFeed);
         for (let batch = 0; batch < 20; batch += 1) {
           const fragment = document.createDocumentFragment();
           for (let index = 0; index < 10; index += 1) {
@@ -288,7 +303,15 @@
           stressFeed.append(fragment);
           await Promise.resolve();
         }
-        await new Promise(resolve => setTimeout(resolve, 0));
+        const rows = stressFeed.children;
+        for (let pass = 0; pass < 10; pass += 1) {
+          for (let index = pass; index < rows.length; index += 10) {
+            rows[index].className = `dynamic-pass-${pass % 2}`;
+            rows[index].style.setProperty("--dynamic-pass", String(pass));
+          }
+          await Promise.resolve();
+        }
+        await quiet;
         const elapsed = Math.round(performance.now() - started);
         const passed = elapsed <= 1000;
         result(17).textContent = window.demoI18n.performanceResult(elapsed, passed);
@@ -303,6 +326,8 @@
         scrollStressViewport.replaceChildren();
         result(18).textContent = window.demoI18n.scrollPerformanceRunning();
         result(18).className = "result info";
+        const started = performance.now();
+        const setupQuiet = waitForDemoDomQuiet(scrollStressViewport);
         const fragment = document.createDocumentFragment();
         for (let index = 0; index < 300; index += 1) {
           const row = document.createElement("div");
@@ -316,12 +341,13 @@
           fragment.append(row);
         }
         scrollStressViewport.append(fragment);
-        await new Promise(resolve => setTimeout(resolve, 100));
-        const started = performance.now();
+        await setupQuiet;
+        const scrollQuiet = waitForDemoDomQuiet(scrollStressViewport);
         for (let index = 0; index < 10; index += 1) {
           scrollStressViewport.scrollTop = index % 2 ? 0 : scrollStressViewport.scrollHeight;
           await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
         }
+        await scrollQuiet;
         const elapsed = Math.round(performance.now() - started);
         const passed = elapsed <= 1000;
         result(18).textContent = window.demoI18n.scrollPerformanceResult(elapsed, passed);
