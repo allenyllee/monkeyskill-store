@@ -180,7 +180,7 @@
 
       <section class="case" id="method-18">
         <div class="number">18</div>
-        <div class="description"><h2>Large-page scroll responsiveness</h2><p>300 controls and overlays across 10 scroll frames</p><span class="mode absolute">Standard + Absolute</span></div>
+        <div class="description"><h2>Large-page scroll responsiveness</h2><p>1200 controls and overlays across 10 scroll frames</p><span class="mode absolute">Standard + Absolute</span></div>
         <div class="fixture"><div class="stress-controls"><button id="run-scroll-stress" type="button">Run scroll check</button></div><div id="scroll-stress-viewport" class="scroll-stress-viewport" aria-hidden="true"></div><p id="result-18" class="result">Waiting for interaction…</p></div>
       </section>
     </main>
@@ -329,7 +329,7 @@
         const started = performance.now();
         const setupQuiet = waitForDemoDomQuiet(scrollStressViewport);
         const fragment = document.createDocumentFragment();
-        for (let index = 0; index < 300; index += 1) {
+        for (let index = 0; index < 1200; index += 1) {
           const row = document.createElement("div");
           row.className = "scroll-stress-row";
           const input = document.createElement("input");

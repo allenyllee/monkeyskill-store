@@ -22,7 +22,7 @@ const translations = {
       ["Canvas 與覆蓋層", "canvas pointer-events:none 且被 overlay 覆蓋", ""],
       ["CSS 背景圖片", "普通元素使用 background-image", "CSS 背景圖片測試"],
       ["動態 DOM 回應性", "加入並持續變更 200 個帶 ID 的資料列，再等待排隊中的修復工作安靜", "執行回應性檢查"],
-      ["大型頁面捲動回應性", "300 組 control／overlay 與 10 個 scroll frame，包含 setup 與排隊中的修復工作", "執行捲動檢查"]
+      ["大型頁面捲動回應性", "1200 組 control／overlay 與 10 個 scroll frame，包含 setup 與排隊中的修復工作", "執行捲動檢查"]
     ],
     waiting: "等待操作…",
     hints: { 6: "右鍵目標應恢復成圖片。", 8: "右鍵目標應恢復成圖片。", 12: "拖曳選取並觀察反白底色；Dark Reader 等色彩擴充可能干擾此項。", 13: "Absolute 應讓 input 重新成為事件目標。", 15: "右鍵目標應恢復成 canvas。", 16: "右鍵應開啟，但「另存新檔」會儲存 HTML，因為它不是 img。", 17: "計時包含排隊中的 observer 工作直到 DOM-quiet checkpoint，並應在 1000 ms 內完成。", 18: "計時包含 setup 與 scroll 觸發的 observer 工作，應在 1000 ms 內完成且不得延遲原生滾輪。" },
@@ -56,7 +56,7 @@ const translations = {
       ["Canvas + overlay", "canvas uses pointer-events:none under an overlay", ""],
       ["CSS background image", "Ordinary element uses background-image", "CSS background image test"],
       ["Dynamic DOM responsiveness", "Append and mutate 200 ID-bearing rows, then wait for queued repair work to become quiet", "Run responsiveness check"],
-      ["Large-page scroll responsiveness", "300 control/overlay pairs across 10 scroll frames, including setup and queued repair work", "Run scroll check"]
+      ["Large-page scroll responsiveness", "1200 control/overlay pairs across 10 scroll frames, including setup and queued repair work", "Run scroll check"]
     ],
     waiting: "Waiting for interaction…",
     hints: { 6: "The context-menu target should be the image again.", 8: "The context-menu target should be the image again.", 12: "Drag to select and inspect the highlight; color-transforming extensions such as Dark Reader may interfere.", 13: "Absolute should make the input the event target again.", 15: "The context-menu target should be the canvas again.", 16: "The context menu should open, but Save As stores HTML because this is not an img element.", 17: "The check includes queued observer work through a DOM-quiet checkpoint and should finish within 1000 ms.", 18: "The check includes setup and scroll-triggered observer work and should finish within 1000 ms without delaying native wheel scrolling." },

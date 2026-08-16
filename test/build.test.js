@@ -76,7 +76,7 @@ test("restore-right-click publishes its complete 18-method demo with the MSkill"
   assert.match(demo, /removeAllRanges/);
   assert.match(demo, /event\.key\.toLowerCase\(\) !== "c"/);
   assert.match(demo, /id="run-scroll-stress"/);
-  assert.match(demo, /for \(let index = 0; index < 300; index \+= 1\)/);
+  assert.match(demo, /for \(let index = 0; index < 1200; index \+= 1\)/);
   assert.match(demo, /for \(let index = 0; index < 10; index \+= 1\)/);
   assert.match(demo, /url\("\.\/test-background\.svg"\)/);
   assert.doesNotMatch(demo, /src="\/test-background\.svg|url\(["']?\/test-background\.svg/);
@@ -106,7 +106,7 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*400 ms[\s\S]*1000 ms/);
   assert.match(skill, /ignore mutations caused only by the Skill's own style or marker updates/);
   assert.match(skill, /Do not query all generic[\s\S]*elements[\s\S]*on each `scroll` event/);
-  assert.match(skill, /`scroll-stress`[\s\S]*300[\s\S]*10 scroll frames[\s\S]*400 ms/);
+  assert.match(skill, /`scroll-stress`[\s\S]*1200[\s\S]*10 scroll frames[\s\S]*400 ms/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
 });
 
