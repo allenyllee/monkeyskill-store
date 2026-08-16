@@ -108,6 +108,8 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /Do not query all generic[\s\S]*elements[\s\S]*on each `scroll` event/);
   assert.match(skill, /`scroll-stress`[\s\S]*1200[\s\S]*10 scroll frames[\s\S]*400 ms/);
   assert.match(skill, /Do not append with `style\.textContent \+= \.\.\.` once per discovered ID/);
+  assert.match(skill, /Do not enqueue an added subtree[\s\S]*`getComputedStyle\(\)` on every ordinary descendant/);
+  assert.match(skill, /startup must not recursively enqueue[\s\S]*`document\.documentElement`/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);
 });
 
