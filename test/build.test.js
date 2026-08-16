@@ -103,9 +103,10 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /neutralize[\s\S]*preventDefault\(\).*at call time/);
   assert.match(skill, /short-lived instance `value` setter guard/);
   assert.match(skill, /geometry-based overlap detection/);
-  assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*400 ms[\s\S]*1000 ms/);
+  assert.match(skill, /200[\s\S]*ID-bearing rows[\s\S]*400 ms/);
   assert.match(skill, /ignore mutations caused only by the Skill's own style or marker updates/);
   assert.match(skill, /Do not query all generic[\s\S]*elements[\s\S]*on each `scroll` event/);
+  assert.match(skill, /do not call `elementsFromPoint\(\)`[\s\S]*once per queued[\s\S]*overlay/);
   assert.match(skill, /`scroll-stress`[\s\S]*1200[\s\S]*10 scroll frames[\s\S]*400 ms/);
   assert.match(skill, /`startup-stress`[\s\S]*1200 pre-existing[\s\S]*candidate is installed[\s\S]*400 ms/);
   assert.match(skill, /Do not append with `style\.textContent \+= \.\.\.` once per discovered ID/);
@@ -114,6 +115,7 @@ test("restore-right-click retains closed-loop implementation constraints in its 
   assert.match(skill, /Do not enqueue an added subtree[\s\S]*`getComputedStyle\(\)` on every ordinary descendant/);
   assert.match(skill, /startup must not recursively enqueue[\s\S]*`document\.documentElement`/);
   assert.match(skill, /Test all three workflows independently in both modes/);
+  assert.match(skill, /Skill-Off baseline[\s\S]*500 ms[\s\S]*1\.5 times/);
   assert.match(skill, /In[\s\S]*Absolute,[\s\S]*registered after the Skill starts[\s\S]*must not[\s\S]*execute at all/);
   assert.match(skill, /blocker call count must remain zero/);
   assert.match(skill, /alternative implementation is acceptable only if[\s\S]*passes the complete[\s\S]*closed loop again/);

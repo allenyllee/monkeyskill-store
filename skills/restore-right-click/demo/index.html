@@ -349,9 +349,8 @@
         }
         await scrollQuiet;
         const elapsed = Math.round(performance.now() - started);
-        const passed = elapsed <= 1000;
-        result(18).textContent = window.demoI18n.scrollPerformanceResult(elapsed, passed);
-        result(18).className = passed ? "result passed" : "result blocked";
+        result(18).textContent = window.demoI18n.scrollPerformanceResult(elapsed);
+        result(18).className = "result info";
         scrollStressButton.disabled = false;
       });
     </script>
