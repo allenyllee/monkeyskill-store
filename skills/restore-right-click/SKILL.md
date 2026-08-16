@@ -54,6 +54,12 @@ closed loop again.
   `event.defaultPrevented`. Wrap cancelling DOM property handlers so their side effects still run
   but a `return false` cannot cancel the gesture. Do not apply this gate to inputs, textareas,
   buttons, links, selects, options, or contenteditable controls.
+- Keep the registration boundary mode-specific. In Standard, already-registered protected
+  handlers may run and retain their side effects while only their cancellation is neutralized. In
+  Absolute, a protected `contextmenu`, `copy`, `cut`, `selectstart`, `dragstart`, or paste-specific
+  listener or DOM property handler registered after the Skill starts must be ignored and must not
+  execute at all. Do not wrap and invoke such a late Absolute handler merely to suppress its return
+  value; observable blocker call count must remain zero.
 - For paste rollback, mark the actual editable target during its `paste`/`beforeinput`
   transaction and protect that same target at the next `input` capture regardless of
   `InputEvent.data` or `inputType`. Use a short-lived instance `value` setter guard, or an
@@ -111,7 +117,7 @@ closed loop again.
 
 ## Success criteria
 
-- [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements.
+- [criterion:context-menu] A real user right-click can open the native context menu on ordinary elements, inputs, images, overlays, and CSS-background elements. In Absolute, a context-menu listener or DOM property handler registered after the Skill starts is ignored and its body is not called; in Standard, an existing handler may keep non-cancelling side effects while its cancellation is neutralized.
 - [criterion:text-selection] Selected text remains selected despite `user-select: none`, `unselectable=on`, primary `mousedown` cancellation, or `selectstart` cancellation. Standard-mode tests must independently model both the `mousedown` and `selectstart` blocker families.
 - [criterion:selection-dismissal] After page text has been selected, a later real primary-button click on another ordinary page area collapses the selection instead of restoring a stale saved range, including when `selectionchange` timing briefly exposes the old range during the new click.
 - [criterion:keyboard-copy] Ctrl/Cmd+C and Ctrl/Cmd+X keydown handlers cannot cancel the shortcut before the browser's copy or cut default behavior occurs. Tests must independently cover listener cancellation through `preventDefault()` and DOM `onkeydown` property cancellation through `return false`.

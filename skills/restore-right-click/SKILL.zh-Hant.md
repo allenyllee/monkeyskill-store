@@ -33,6 +33,7 @@
 
 - 真實拖曳在 release 被清除時，必須在 `pointerup`／`mouseup` capture listener 中同步保存仍存活、非 collapsed 的 Range，再於後續 macrotask 恢復；不能只依賴 `selectionchange` 或 release timer。
 - 對非 control 文字目標的 `mousedown`／`selectstart` cancellation，必須在呼叫當下中和 page-owned `preventDefault()`；property handler 的副作用仍須執行，但 `return false` 不得取消 gesture。
+- 註冊邊界必須依模式區分。Standard 中，既有 protected handler 可以執行並保留副作用，只中和取消行為；Absolute 中，Skill 啟動後才註冊的 `contextmenu`、`copy`、`cut`、`selectstart`、`dragstart`、paste-specific listener 或 DOM property handler 必須直接忽略，handler body 完全不得執行，blocker call count 必須維持零。不得先 wrap、呼叫 late Absolute handler，再只抑制其回傳值。
 - Paste rollback 必須在 `paste`／`beforeinput` 標記實際 editable target，並在下一個 `input` capture 保護同一 target，不得依賴 `InputEvent.data` 或 `inputType`。短生命週期 instance `value` setter guard 或等效機制須讓原生插入先完成、拒絕 rollback，並在 resulting input checkpoint 與下一個 task 後精確還原 descriptor。
 - Overlay 必須使用 geometry overlap 或在 offscreen target 進入 viewport 時可靠重掃；插入當下只做一次 `elementFromPoint()` 不足。
 - 可見選取不能只覆寫 ID ancestor 自身的 `::selection`。必須以非透明、`!important`、高於 page ID-scoped descendant 規則的 selector 命中相關 ID ancestor 下的 descendants，並處理新增的 ID 或 descendant；不得硬編碼測試 fixture IDs。
@@ -42,7 +43,7 @@
 
 ## 成功條件
 
-- [criterion:context-menu] 使用者可在一般元素、input、image、overlay 與 CSS background 元素開啟原生右鍵選單。
+- [criterion:context-menu] 使用者可在一般元素、input、image、overlay 與 CSS background 元素開啟原生右鍵選單。Absolute 中，Skill 啟動後才註冊的 context-menu listener 或 DOM property handler 必須被忽略且 body 不執行；Standard 中，既有 handler 可保留非取消性的副作用，只中和取消行為。
 - [criterion:text-selection] 即使存在 `user-select:none`、`unselectable=on`、primary `mousedown` 或 `selectstart` cancellation，文字仍可選取並保持選取。
 - [criterion:selection-dismissal] 選取頁面文字後，再點擊一般區域會正常折疊選取，不會恢復過期 Range。
 - [criterion:keyboard-copy] Ctrl/Cmd+C 與 Ctrl/Cmd+X 不會被 listener `preventDefault()` 或 DOM `onkeydown` 的 `return false` 提前取消。
