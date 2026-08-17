@@ -85,10 +85,15 @@ for the complete release-time checks, endpoint precautions, evidence requirement
 1. Fork this repository.
 2. Add `skills/<skill-id>/skill.json` and `skills/<skill-id>/SKILL.md`.
    A functional demo may live beside them at `skills/<skill-id>/demo/index.html`; declare it as `"demo": "demo/index.html"` in `skill.json`.
+   A versioned `conformance.json` may carry constrained historical regressions using the same
+   TestSpec DSL as the Extension Runner. It may reference only criteria already declared in
+   `SKILL.md`; it can block a candidate but cannot authorize one, bypass either Tester, or weaken
+   security scans. Its contents are never sent to Builder or Tester, and only constrained
+   criterion/category/mode diagnostics can reach Builder.
 3. Run `npm test` and `npm run build`.
 4. Open a pull request.
 
-The build rejects extra files inside a Skill directory, executable snippets in `SKILL.md`, missing criteria, unsafe IDs, unsupported catalog metadata, and demo assets containing network, storage, opener, iframe, or Extension APIs. Demo content is published for people to try but is never sent to the Builder or Tester.
+The build rejects extra files inside a Skill directory, executable snippets in `SKILL.md`, malformed Conformance envelopes, missing criteria, unsafe IDs, unsupported catalog metadata, and demo assets containing network, storage, opener, iframe, or Extension APIs. Demo content is published for people to try but is never sent to the Builder or Tester.
 
 ## Local development
 

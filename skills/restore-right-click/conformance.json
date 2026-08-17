@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "tests": [
+    {
+      "id": "regression-text-selection",
+      "kind": "behavior",
+      "criterion": "text-selection",
+      "mode": "standard",
+      "fixture": { "nodes": [{ "id": "target", "tag": "div", "parent": null, "text": "select me", "attributes": {}, "styles": { "userSelect": "none" } }], "rules": [] },
+      "blockers": [
+        { "id": "down-block", "target": "target", "event": "mousedown", "registration": "inline", "effect": "prevent-default", "when": { "button": 0 } },
+        { "id": "select-block", "target": "target", "event": "selectstart", "registration": "listener", "effect": "prevent-default", "when": {} }
+      ],
+      "steps": [{ "action": "wait", "ms": 50 }, { "action": "drag-select-text", "target": "target" }],
+      "assertions": [
+        { "type": "computed-style", "target": "target", "property": "userSelect", "pseudo": null, "operator": "neq", "value": "none" },
+        { "type": "event-default-prevented", "step": 1, "expected": false },
+        { "type": "selection-collapsed", "expected": false }
+      ]
+    },
+    {
+      "id": "regression-keyboard-copy",
+      "kind": "behavior",
+      "criterion": "keyboard-copy",
+      "mode": "standard",
+      "fixture": { "nodes": [{ "id": "target", "tag": "input", "parent": null, "text": "", "attributes": { "value": "copy me" }, "styles": {} }], "rules": [] },
+      "blockers": [{ "id": "block", "target": "target", "event": "keydown", "registration": "property", "effect": "return-false", "when": { "key": "c", "ctrlKey": true } }],
+      "steps": [{ "action": "copy-shortcut", "target": "target", "operation": "copy" }],
+      "assertions": [
+        { "type": "event-default-prevented", "step": 0, "expected": false },
+        { "type": "value", "target": "target", "operator": "eq", "value": "copy me" }
+      ]
+    },
+    {
+      "id": "regression-author-overlay",
+      "kind": "behavior",
+      "criterion": "pointer-overlays",
+      "mode": "absolute",
+      "fixture": {
+        "nodes": [
+          { "id": "wrap", "tag": "div", "parent": null, "text": "", "attributes": {}, "styles": { "position": "relative", "width": "240px", "height": "120px" } },
+          { "id": "target", "tag": "canvas", "parent": "wrap", "text": "", "attributes": {}, "styles": { "width": "240px", "height": "120px" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } },
+          { "id": "overlay", "tag": "div", "parent": "wrap", "text": "", "attributes": { "class": "blocking-overlay" }, "styles": {}, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } }
+        ],
+        "rules": [{ "target": "overlay", "pseudo": null, "styles": { "position": "absolute", "inset": "0" } }]
+      },
+      "blockers": [],
+      "steps": [{ "action": "wait", "ms": 1600 }],
+      "assertions": [{ "type": "hit-test", "target": "target", "expected": true, "point": "center" }]
+    },
+    {
+      "id": "regression-image-overlay",
+      "kind": "behavior",
+      "criterion": "pointer-overlays",
+      "mode": "absolute",
+      "fixture": {
+        "nodes": [
+          { "id": "wrap", "tag": "div", "parent": null, "text": "", "attributes": {}, "styles": { "position": "relative", "width": "240px", "height": "120px" } },
+          { "id": "target", "tag": "img", "parent": "wrap", "text": "", "attributes": { "alt": "image target" }, "styles": { "width": "240px", "height": "120px" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } },
+          { "id": "overlay", "tag": "div", "parent": "wrap", "text": "", "attributes": { "class": "blocking-overlay" }, "styles": {}, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } }
+        ],
+        "rules": [{ "target": "overlay", "pseudo": null, "styles": { "position": "absolute", "inset": "0" } }]
+      },
+      "blockers": [],
+      "steps": [{ "action": "wait", "ms": 1600 }],
+      "assertions": [{ "type": "hit-test", "target": "target", "expected": true, "point": "center" }]
+    },
+    {
+      "id": "regression-input-overlay",
+      "kind": "behavior",
+      "criterion": "pointer-overlays",
+      "mode": "absolute",
+      "fixture": {
+        "nodes": [
+          { "id": "wrap", "tag": "div", "parent": null, "text": "", "attributes": {}, "styles": { "position": "relative", "width": "240px", "height": "60px" } },
+          { "id": "target", "tag": "input", "parent": "wrap", "text": "", "attributes": { "value": "input target" }, "styles": { "width": "240px", "height": "60px" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 60 } },
+          { "id": "overlay", "tag": "div", "parent": "wrap", "text": "", "attributes": { "class": "blocking-overlay" }, "styles": {}, "rect": { "x": 8, "y": 8, "width": 240, "height": 60 } }
+        ],
+        "rules": [{ "target": "overlay", "pseudo": null, "styles": { "position": "absolute", "inset": "0" } }]
+      },
+      "blockers": [],
+      "steps": [{ "action": "wait", "ms": 1600 }],
+      "assertions": [{ "type": "hit-test", "target": "target", "expected": true, "point": "center" }]
+    },
+    {
+      "id": "regression-background-overlay",
+      "kind": "behavior",
+      "criterion": "pointer-overlays",
+      "mode": "absolute",
+      "fixture": {
+        "nodes": [
+          { "id": "wrap", "tag": "div", "parent": null, "text": "", "attributes": {}, "styles": { "position": "relative", "width": "240px", "height": "120px" } },
+          { "id": "target", "tag": "div", "parent": "wrap", "text": "background target", "attributes": {}, "styles": { "width": "240px", "height": "120px", "backgroundColor": "rgb(20, 40, 60)" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } },
+          { "id": "overlay", "tag": "div", "parent": "wrap", "text": "", "attributes": { "class": "blocking-overlay" }, "styles": {}, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } }
+        ],
+        "rules": [{ "target": "overlay", "pseudo": null, "styles": { "position": "absolute", "inset": "0" } }]
+      },
+      "blockers": [],
+      "steps": [{ "action": "wait", "ms": 1600 }],
+      "assertions": [{ "type": "hit-test", "target": "target", "expected": true, "point": "center" }]
+    },
+    {
+      "id": "regression-selection-dismissal",
+      "kind": "behavior",
+      "criterion": "selection-dismissal",
+      "mode": "absolute",
+      "fixture": {
+        "nodes": [
+          { "id": "selected-text", "tag": "p", "parent": null, "text": "selected page text", "attributes": {}, "styles": {} },
+          { "id": "page-area", "tag": "div", "parent": null, "text": "ordinary page area", "attributes": {}, "styles": { "minHeight": "40px" } },
+          { "id": "next-text", "tag": "p", "parent": null, "text": "a different selectable passage", "attributes": {}, "styles": {} }
+        ],
+        "rules": []
+      },
+      "blockers": [],
+      "steps": [
+        { "action": "drag-select-text", "target": "selected-text" },
+        { "action": "click-page", "target": "page-area" },
+        { "action": "drag-select-text", "target": "next-text" }
+      ],
+      "assertions": [
+        { "type": "event-default-prevented", "step": 1, "expected": false },
+        { "type": "selection-collapsed", "step": 1, "expected": true },
+        { "type": "selection-collapsed", "step": 2, "expected": false },
+        { "type": "selection-write-count", "step": 2, "operator": "lte", "value": 5 }
+      ]
+    }
+  ]
+}

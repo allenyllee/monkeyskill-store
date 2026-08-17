@@ -16,6 +16,13 @@ test("build creates a catalog from human-readable Skill directories", async () =
   }
   const rightClick = catalog.skills.find(skill => skill.id === "restore-right-click");
   assert.equal(rightClick.demoUrl, "skills/restore-right-click/demo/index.html");
+  assert.equal(rightClick.conformanceUrl, "skills/restore-right-click/conformance.json");
+  const conformance = JSON.parse(await readFile(new URL("../dist/skills/restore-right-click/conformance.json", import.meta.url), "utf8"));
+  assert.equal(conformance.schemaVersion, 1);
+  assert.deepEqual(
+    [...new Set(conformance.tests.map(candidate => candidate.criterion))].sort(),
+    ["keyboard-copy", "pointer-overlays", "selection-dismissal", "text-selection"]
+  );
 });
 
 test("Store publishes and switches English and Traditional Chinese content", async () => {
@@ -171,6 +178,7 @@ test("Store presents both test sources as TestSpecs", async () => {
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
   assert.match(source, /Builder TestSpec:/);
   assert.match(source, /Independent TestSpec:/);
+  assert.match(source, /Developer Conformance:/);
   assert.doesNotMatch(source, /Builder self-tests:|Independent tests:/);
 });
 

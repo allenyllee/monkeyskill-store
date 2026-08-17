@@ -15,18 +15,18 @@ const LOCAL_RUNTIME_CHANGE_KEY = "monkeyskill-local-runtime-change";
 const messages = {
   "zh-Hant": {
     connecting: "正在連線至 Extension…", ready: "Extension 已連線", missing: "未偵測到 MonkeySkill Extension",
-    heroEyebrow: "安裝能力，而不是更多擴充功能", heroTitle: "需要的功能，\n現在才生成。", heroCopy: "這個 Store 只發布人類可讀的 MSkill 規格。MonkeySkill Extension 會使用你的 LLM 生成 Build，通過公開與獨立測試後，再請你核准安裝。",
+    heroEyebrow: "安裝能力，而不是更多擴充功能", heroTitle: "需要的功能，\n現在才生成。", heroCopy: "這個 Store 發布人類可讀的 MSkill 規格與受限的固定回歸測試。MonkeySkill Extension 會使用你的 LLM 生成 Build，通過差分安全、開發者回歸、公開與獨立測試後，再請你核准安裝。",
     catalogEyebrow: "社群目錄", catalogTitle: "可用的 MSkills", installed: "已安裝", available: "可用", regenerate: "重新生成", install: "使用 MonkeySkill 安裝", demo: "開啟測試頁", modes: "模式",
     installedStatus: "已安裝；可重新生成更新。", availableStatus: "由你的 LLM 即時生成後安裝。", viewSource: "查看 Skill 內容", sourceHint: "展開後載入人類可讀的 Skill 內容。", loadingSource: "正在載入 Skill 內容…",
-    cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 只會傳送 skill.json 與人類可讀的 SKILL.md。Builder 與獨立 Tester 會在你的 Extension 中生成及驗證 Build。", approveTitle: "核准安裝生成的 Build？",
+    cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 會傳送 skill.json、人類可讀的 SKILL.md，以及只能阻擋、不能授權的受限 Developer Conformance。Builder 不會看到測試內容。", approveTitle: "核准安裝生成的 Build？",
     footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。", securityExample: "⚠ 惡意安全測試樣本：預期 Tester 拒絕，絕不應產生或安裝 Build。", testSecurity: "測試安全閘門"
   },
   en: {
     connecting: "Connecting to Extension…", ready: "Extension connected", missing: "MonkeySkill Extension not detected",
-    heroEyebrow: "INSTALL ABILITIES, NOT EXTENSIONS", heroTitle: "Generate the ability\nwhen you need it.", heroCopy: "This Store publishes only human-readable MSkill specifications. MonkeySkill Extension uses your LLM to generate a Build, validates it with public and independent tests, then asks for approval before installation.",
+    heroEyebrow: "INSTALL ABILITIES, NOT EXTENSIONS", heroTitle: "Generate the ability\nwhen you need it.", heroCopy: "This Store publishes human-readable MSkill specifications with constrained, versioned regression tests. MonkeySkill validates differential security, developer conformance, public tests, and independent tests before approval.",
     catalogEyebrow: "COMMUNITY CATALOG", catalogTitle: "Available MSkills", installed: "Installed", available: "Available", regenerate: "Regenerate", install: "Install with MonkeySkill", demo: "Open test page", modes: "Modes",
     installedStatus: "Installed; regenerate to update.", availableStatus: "Generated on demand by your LLM before installation.", viewSource: "View Skill content", sourceHint: "Expand to load the human-readable Skill content.", loadingSource: "Loading Skill content…",
-    cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends only skill.json and the human-readable SKILL.md. Builder and an independent Tester generate and validate the Build inside your Extension.", approveTitle: "Approve the generated Build?",
+    cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends skill.json, human-readable SKILL.md, and constrained Developer Conformance that may block but never authorize a build. Builder never sees its test content.", approveTitle: "Approve the generated Build?",
     footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content.", securityExample: "⚠ Malicious security sample: Tester must reject it; no Build should be generated or installed.", testSecurity: "Test security gate"
   }
 };
@@ -308,14 +308,21 @@ async function loadSkillPackage(entry) {
   if (manifestUrl.origin !== location.origin || instructionsUrl.origin !== location.origin) {
     throw new Error("Catalog entries must use same-origin Skill files.");
   }
-  const [manifestResponse, instructionsResponse] = await Promise.all([
+  const conformanceUrl = entry.conformanceUrl ? new URL(entry.conformanceUrl, location.href) : null;
+  if (conformanceUrl && conformanceUrl.origin !== location.origin) throw new Error("Developer Conformance must come from the same origin.");
+  const [manifestResponse, instructionsResponse, conformanceResponse] = await Promise.all([
     fetch(manifestUrl, { cache: "no-store" }),
-    fetch(instructionsUrl, { cache: "no-store" })
+    fetch(instructionsUrl, { cache: "no-store" }),
+    conformanceUrl ? fetch(conformanceUrl, { cache: "no-store" }) : null
   ]);
-  if (!manifestResponse.ok || !instructionsResponse.ok) throw new Error("Unable to load the MSkill specification.");
+  if (!manifestResponse.ok || !instructionsResponse.ok || conformanceResponse && !conformanceResponse.ok) throw new Error("Unable to load the MSkill specification.");
   const skill = await manifestResponse.json();
   if (skill.id !== entry.id || skill.version !== entry.version) throw new Error("Catalog and Skill manifest do not match.");
-  return { skill, instructions: await instructionsResponse.text() };
+  return {
+    skill,
+    instructions: await instructionsResponse.text(),
+    ...(conformanceResponse ? { developerConformance: await conformanceResponse.json() } : {})
+  };
 }
 
 async function reviewDraft(draft) {
@@ -328,6 +335,7 @@ async function reviewDraft(draft) {
       `Tester: ${draft.generation.testerModel}`,
       `Generation attempts: ${draft.generation.attempts}`,
       `Builder TestSpec: ${draft.publicTestCount - (draft.publicTestInconclusiveCount || 0)}/${draft.publicTestCount}`,
+      `Developer Conformance: ${draft.developerConformancePassCount}/${draft.developerConformanceCount}`,
       `Independent TestSpec: ${draft.independentTestCount - (draft.independentTestInconclusiveCount || 0)}/${draft.independentTestCount}`,
       `Hash: ${draft.generation.hash.slice(0, 16)}`,
       `Validation: ${draft.validation.join(", ")}`

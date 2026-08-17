@@ -29,7 +29,7 @@ export async function buildStore() {
       .filter(item => item.isFile())
       .map(item => item.name)
       .sort();
-    const unexpected = files.filter(name => !["SKILL.md", "SKILL.zh-Hant.md", "skill.json"].includes(name));
+    const unexpected = files.filter(name => !["SKILL.md", "SKILL.zh-Hant.md", "conformance.json", "skill.json"].includes(name));
     if (unexpected.length > 0) throw new Error(`${entry.name} contains unsupported files: ${unexpected.join(", ")}`);
     const directories = children.filter(item => item.isDirectory()).map(item => item.name);
     if (directories.some(name => name !== "demo")) throw new Error(`${entry.name} contains an unsupported directory.`);
@@ -43,6 +43,11 @@ export async function buildStore() {
     await mkdir(destination, { recursive: true });
     await cp(join(skillRoot, "skill.json"), join(destination, "skill.json"));
     await cp(join(skillRoot, "SKILL.md"), join(destination, "SKILL.md"));
+    if (files.includes("conformance.json")) {
+      const conformance = JSON.parse(await readFile(join(skillRoot, "conformance.json"), "utf8"));
+      validateConformanceEnvelope(conformance, manifest.id);
+      await cp(join(skillRoot, "conformance.json"), join(destination, "conformance.json"));
+    }
     if (files.includes("SKILL.zh-Hant.md")) {
       const localizedInstructions = await readFile(join(skillRoot, "SKILL.zh-Hant.md"), "utf8");
       validateInstructions(localizedInstructions, `${manifest.id}/zh-Hant`);
@@ -67,6 +72,7 @@ export async function buildStore() {
       securityExample: SECURITY_EXAMPLES.has(manifest.id),
       manifestUrl: `skills/${manifest.id}/skill.json`,
       instructionsUrl: `skills/${manifest.id}/SKILL.md`,
+      ...(files.includes("conformance.json") ? { conformanceUrl: `skills/${manifest.id}/conformance.json` } : {}),
       localized: {
         en: { name: manifest.name, description: manifest.description, instructionsUrl: `skills/${manifest.id}/SKILL.md` },
         ...(manifest.locales?.["zh-Hant"] ? {
@@ -83,6 +89,17 @@ export async function buildStore() {
   await cp(siteRoot, distRoot, { recursive: true });
   await writeFile(join(distRoot, "catalog.json"), `${JSON.stringify({ schemaVersion: 1, skills }, null, 2)}\n`);
   return { skills };
+}
+
+function validateConformanceEnvelope(value, id) {
+  if (!value || typeof value !== "object" || Array.isArray(value)
+    || value.schemaVersion !== 1 || !Array.isArray(value.tests)
+    || value.tests.length === 0 || value.tests.length > 40) {
+    throw new Error(`${id}/conformance.json is not a bounded TestSpec envelope.`);
+  }
+  if (Object.keys(value).some(key => !["schemaVersion", "tests"].includes(key))) {
+    throw new Error(`${id}/conformance.json contains unsupported top-level fields.`);
+  }
 }
 
 function validateManifest(value, directory) {
