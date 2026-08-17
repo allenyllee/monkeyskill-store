@@ -21,8 +21,11 @@ test("build creates a catalog from human-readable Skill directories", async () =
   assert.equal(conformance.schemaVersion, 1);
   assert.deepEqual(
     [...new Set(conformance.tests.map(candidate => candidate.criterion))].sort(),
-    ["keyboard-copy", "pointer-overlays", "selection-dismissal", "text-selection"]
+    ["context-menu", "keyboard-copy", "pointer-overlays", "selection-dismissal", "text-selection"]
   );
+  const backgroundOverlay = conformance.tests.find(candidate => candidate.id === "regression-background-overlay");
+  assert.equal(backgroundOverlay.criterion, "context-menu");
+  assert.match(backgroundOverlay.fixture.nodes.find(node => node.id === "target").styles.backgroundImage, /^linear-gradient\(/);
 });
 
 test("Store publishes and switches English and Traditional Chinese content", async () => {

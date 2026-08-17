@@ -85,12 +85,12 @@
     {
       "id": "regression-background-overlay",
       "kind": "behavior",
-      "criterion": "pointer-overlays",
+      "criterion": "context-menu",
       "mode": "absolute",
       "fixture": {
         "nodes": [
           { "id": "wrap", "tag": "div", "parent": null, "text": "", "attributes": {}, "styles": { "position": "relative", "width": "240px", "height": "120px" } },
-          { "id": "target", "tag": "div", "parent": "wrap", "text": "background target", "attributes": {}, "styles": { "width": "240px", "height": "120px", "backgroundColor": "rgb(20, 40, 60)" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } },
+          { "id": "target", "tag": "div", "parent": "wrap", "text": "background target", "attributes": {}, "styles": { "width": "240px", "height": "120px", "backgroundImage": "linear-gradient(rgb(20, 40, 60), rgb(55, 102, 126))" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } },
           { "id": "overlay", "tag": "div", "parent": "wrap", "text": "", "attributes": { "class": "blocking-overlay" }, "styles": {}, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } }
         ],
         "rules": [{ "target": "overlay", "pseudo": null, "styles": { "position": "absolute", "inset": "0" } }]
