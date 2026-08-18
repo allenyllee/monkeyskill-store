@@ -9,6 +9,21 @@ The Store contains specifications, not generated JavaScript. The Extension first
 security gate. Only the required `allow/reject` differential result reaches Builder; the Extension
 then runs both TestSpecs locally and asks for explicit approval before installation.
 
+The featured **Build Your Own MonkeySkill Runner** entry is a special, human-readable Bootstrap
+MSkill rather than a normal browser Skill. Its copyable versioned URL identifies a SHA-256-listed
+package containing goals, role separation, a bounded stdin/stdout protocol, and fixed positive and
+negative meta-conformance. A user can paste that single URL into a capable local agent. The agent
+discovers the current operating environment, asks a fresh Builder to generate a minimal Runner,
+asks a fresh Tester to validate it without Builder reasoning, and atomically installs only the
+exact passing artifact in a user-scoped location. The Store publishes no Runner implementation or
+binary. Platform mechanisms such as CDP, Windows UI Automation, macOS Accessibility, or AT-SPI are
+provider choices made from the observed environment, not separate hard-coded prompt libraries.
+
+The generated Runner does not receive LLM credentials or the MonkeySkill Agent API token. It is
+invoked by the authenticated local host as a bounded child process: one JSON request on stdin, one
+JSON response on stdout, diagnostics on stderr. This keeps the same evidence envelope usable for
+future browser and desktop MSkills while allowing the generated provider to be replaced.
+
 The Store and its published functional Demo share Traditional Chinese and English locale routing.
 Demo links carry the Store's current locale; a directly opened Demo falls back to the browser
 language and also provides its own language switch without using persistent browser storage.

@@ -1,4 +1,5 @@
 import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,10 +30,10 @@ export async function buildStore() {
       .filter(item => item.isFile())
       .map(item => item.name)
       .sort();
-    const unexpected = files.filter(name => !["SKILL.md", "SKILL.zh-Hant.md", "conformance.json", "skill.json"].includes(name));
+    const unexpected = files.filter(name => !["SKILL.md", "SKILL.zh-Hant.md", "conformance.json", "skill.json", "workflow.json"].includes(name));
     if (unexpected.length > 0) throw new Error(`${entry.name} contains unsupported files: ${unexpected.join(", ")}`);
     const directories = children.filter(item => item.isDirectory()).map(item => item.name);
-    if (directories.some(name => name !== "demo")) throw new Error(`${entry.name} contains an unsupported directory.`);
+    if (directories.some(name => !["demo", "protocol", "conformance"].includes(name))) throw new Error(`${entry.name} contains an unsupported directory.`);
     if (children.some(item => !item.isFile() && !item.isDirectory())) throw new Error(`${entry.name} contains an unsupported filesystem entry.`);
 
     const manifest = validateManifest(JSON.parse(await readFile(join(skillRoot, "skill.json"), "utf8")), entry.name);
@@ -62,6 +63,12 @@ export async function buildStore() {
     } else if (directories.includes("demo")) {
       throw new Error(`${manifest.id} has demo assets but does not declare a demo entrypoint.`);
     }
+    let bootstrap;
+    if (manifest.artifactType === "runner-bootstrap") {
+      bootstrap = await publishBootstrapPackage({ skillRoot, destination, manifest, files, directories });
+    } else if (files.includes("workflow.json") || directories.some(name => ["protocol", "conformance"].includes(name))) {
+      throw new Error(`${manifest.id} has Bootstrap files but is not a runner-bootstrap artifact.`);
+    }
     skills.push({
       id: manifest.id,
       name: manifest.name,
@@ -69,6 +76,7 @@ export async function buildStore() {
       description: manifest.description,
       modes: manifest.modes,
       capabilities: manifest.capabilities,
+      artifactType: manifest.artifactType || "skill",
       securityExample: SECURITY_EXAMPLES.has(manifest.id),
       manifestUrl: `skills/${manifest.id}/skill.json`,
       instructionsUrl: `skills/${manifest.id}/SKILL.md`,
@@ -82,7 +90,11 @@ export async function buildStore() {
           }
         } : {})
       },
-      ...(manifest.demo ? { demoUrl: `skills/${manifest.id}/${manifest.demo}` } : {})
+      ...(manifest.demo ? { demoUrl: `skills/${manifest.id}/${manifest.demo}` } : {}),
+      ...(bootstrap ? {
+        bootstrapUrl: `skills/${manifest.id}/${manifest.version}/bootstrap.json`,
+        bootstrapPackageHash: bootstrap.packageHash
+      } : {})
     });
   }
 
@@ -109,6 +121,9 @@ function validateManifest(value, directory) {
     if (typeof value[field] !== "string" || !value[field].trim()) throw new Error(`${directory} is missing ${field}.`);
   }
   if (value.entrypoint !== "SKILL.md") throw new Error(`${directory} must use SKILL.md as its entrypoint.`);
+  if (value.artifactType !== undefined && value.artifactType !== "runner-bootstrap") {
+    throw new Error(`${directory} has an unsupported artifactType.`);
+  }
   if (!Array.isArray(value.modes) || value.modes.length === 0 || value.modes.some(mode => !MODE.test(mode))) {
     throw new Error(`${directory} has invalid modes.`);
   }
@@ -126,6 +141,45 @@ function validateManifest(value, directory) {
   }
   if ("securityExample" in value) throw new Error(`${directory} must not expose Store-only security metadata in its manifest.`);
   return value;
+}
+
+async function publishBootstrapPackage({ skillRoot, destination, manifest, files, directories }) {
+  if (!files.includes("workflow.json") || !directories.includes("protocol") || !directories.includes("conformance")) {
+    throw new Error(`${manifest.id} runner-bootstrap is missing workflow, protocol, or conformance files.`);
+  }
+  const versionRoot = join(destination, manifest.version);
+  await mkdir(versionRoot, { recursive: true });
+  const relativeFiles = ["skill.json", "SKILL.md", "workflow.json"];
+  if (files.includes("SKILL.zh-Hant.md")) relativeFiles.push("SKILL.zh-Hant.md");
+  for (const directory of ["protocol", "conformance"]) {
+    const entries = await readdir(join(skillRoot, directory), { withFileTypes: true });
+    if (entries.length === 0 || entries.some(item => !item.isFile() || !item.name.endsWith(".json"))) {
+      throw new Error(`${manifest.id}/${directory} must contain only JSON files.`);
+    }
+    for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) relativeFiles.push(`${directory}/${entry.name}`);
+  }
+  const published = [];
+  for (const file of relativeFiles) {
+    const source = join(skillRoot, file);
+    const bytes = await readFile(source);
+    if (bytes.length === 0 || bytes.length > 200_000) throw new Error(`${manifest.id}/${file} is empty or too large.`);
+    if (file.endsWith(".json")) JSON.parse(bytes.toString("utf8"));
+    await mkdir(dirname(join(versionRoot, file)), { recursive: true });
+    await cp(source, join(versionRoot, file));
+    published.push({ path: file.replaceAll("\\", "/"), sha256: createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length });
+  }
+  const packageCore = {
+    schemaVersion: 1,
+    artifactType: "runner-bootstrap",
+    id: manifest.id,
+    version: manifest.version,
+    entrypoint: "SKILL.md",
+    workflow: "workflow.json",
+    files: published
+  };
+  const packageHash = createHash("sha256").update(JSON.stringify(packageCore)).digest("hex");
+  await writeFile(join(versionRoot, "bootstrap.json"), `${JSON.stringify({ ...packageCore, packageHash }, null, 2)}\n`);
+  return { packageHash };
 }
 
 async function validateDemoAssets(demoRoot, id) {

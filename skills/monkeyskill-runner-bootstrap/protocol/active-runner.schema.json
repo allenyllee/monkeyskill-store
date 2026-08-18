@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://allenyllee.github.io/monkeyskill-store/protocol/active-runner.schema.json",
+  "title": "Active local MonkeySkill Runner manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "protocolVersion", "executable", "args", "artifactHash", "installedAt"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "protocolVersion": { "const": 1 },
+    "executable": { "type": "string", "minLength": 1 },
+    "args": { "type": "array", "maxItems": 16, "items": { "type": "string", "maxLength": 1000 } },
+    "artifactHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "installedAt": { "type": "string", "format": "date-time" }
+  }
+}

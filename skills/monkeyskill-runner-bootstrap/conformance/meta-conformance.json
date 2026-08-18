@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "suite": "runner-bootstrap-meta-conformance",
+  "requiredCases": [
+    { "id": "valid-minimal-browser-case", "kind": "positive", "criterion": "browser-evidence", "expect": "structured-pass-with-matching-artifact-hash" },
+    { "id": "isolated-profile-cleanup-on-pass", "kind": "positive", "criterion": "browser-evidence", "expect": "temporary-resources-removed" },
+    { "id": "isolated-profile-cleanup-on-failure", "kind": "negative", "criterion": "browser-evidence", "expect": "failure-and-temporary-resources-removed" },
+    { "id": "malformed-json", "kind": "negative", "criterion": "fail-closed", "expect": "nonzero-exit-no-pass" },
+    { "id": "oversized-request", "kind": "negative", "criterion": "fail-closed", "expect": "rejected-no-browser-start" },
+    { "id": "unsupported-action", "kind": "negative", "criterion": "negative-canaries", "expect": "fail-or-inconclusive-never-pass" },
+    { "id": "forbidden-external-url", "kind": "negative", "criterion": "negative-canaries", "expect": "rejected-before-network" },
+    { "id": "forced-timeout", "kind": "negative", "criterion": "negative-canaries", "expect": "timeout-never-pass-and-cleanup" },
+    { "id": "deliberately-failing-assertion", "kind": "negative", "criterion": "negative-canaries", "expect": "one-fail-zero-false-pass" },
+    { "id": "stdout-protocol-purity", "kind": "positive", "criterion": "isolated-transport", "expect": "exactly-one-json-response" },
+    { "id": "secret-absence", "kind": "positive", "criterion": "isolated-transport", "expect": "runner-environment-has-no-agent-or-llm-token" },
+    { "id": "host-runtime-hash", "kind": "positive", "criterion": "host-integration", "expect": "response-hash-equals-active-manifest" }
+  ],
+  "diagnosticProjection": ["criterion", "category", "provider", "phase"],
+  "forbiddenDiagnosticFields": ["fixture", "expected", "assertion", "hiddenCaseId", "repairInstruction"]
+}

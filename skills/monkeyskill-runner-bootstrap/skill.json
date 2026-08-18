@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "monkeyskill-runner-bootstrap",
+  "name": "Build Your Own MonkeySkill Runner",
+  "version": "1.0.0",
+  "description": "A human-readable bootstrap contract that lets your local agent generate, test, and install a minimal evidence Runner for your current operating environment.",
+  "locales": {
+    "zh-Hant": {
+      "name": "建構你自己的 MonkeySkill Runner",
+      "description": "讓本機 Agent 依目前作業環境即時生成、測試並安裝最小證據 Runner 的人類可讀 Bootstrap 合約。"
+    }
+  },
+  "artifactType": "runner-bootstrap",
+  "capabilities": ["local-process", "browser-automation", "filesystem", "subagents"],
+  "forbiddenCapabilities": ["remote-execution", "credential-access", "silent-privilege-escalation", "unbounded-network"],
+  "modes": ["bootstrap"],
+  "entrypoint": "SKILL.md"
+}

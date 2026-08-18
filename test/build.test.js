@@ -45,10 +45,29 @@ test("Store publishes and switches English and Traditional Chinese content", asy
   assert.match(page, /data-locale="en"/);
 });
 
-test("published catalog contains no generated Build or TestSpec fields", async () => {
+test("published catalog contains no generated Build or TestSpec payloads", async () => {
   await buildStore();
   const catalog = await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8");
-  assert.doesNotMatch(catalog, /artifactType|TestSpec|selfTests|javascript/i);
+  assert.doesNotMatch(catalog, /publicTestSpec|independentTestSpec|selfTests|"javascript"/i);
+});
+
+test("Store publishes an immutable hashed Runner Bootstrap package", async () => {
+  await buildStore();
+  const catalog = JSON.parse(await readFile(new URL("../dist/catalog.json", import.meta.url), "utf8"));
+  assert.equal(catalog.skills[0].id, "monkeyskill-runner-bootstrap", "Bootstrap should be prominent in the sorted catalog.");
+  const bootstrap = catalog.skills.find(skill => skill.id === "monkeyskill-runner-bootstrap");
+  assert.equal(bootstrap.artifactType, "runner-bootstrap");
+  assert.equal(bootstrap.bootstrapUrl, "skills/monkeyskill-runner-bootstrap/1.0.0/bootstrap.json");
+  assert.match(bootstrap.bootstrapPackageHash, /^[a-f0-9]{64}$/);
+  const pkg = JSON.parse(await readFile(new URL(`../dist/${bootstrap.bootstrapUrl}`, import.meta.url), "utf8"));
+  assert.equal(pkg.packageHash, bootstrap.bootstrapPackageHash);
+  assert.equal(pkg.entrypoint, "SKILL.md");
+  assert.ok(pkg.files.some(file => file.path === "workflow.json"));
+  assert.ok(pkg.files.some(file => file.path === "conformance/meta-conformance.json"));
+  assert.ok(pkg.files.every(file => /^[a-f0-9]{64}$/.test(file.sha256)));
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  assert.match(source, /copyBootstrapUrl/);
+  assert.match(source, /navigator\.clipboard\.writeText/);
 });
 
 test("Store labels a disguised non-executable security sample without leaking the answer to Tester", async () => {
