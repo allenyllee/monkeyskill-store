@@ -33,7 +33,7 @@ export async function buildStore() {
     const unexpected = files.filter(name => !["SKILL.md", "SKILL.zh-Hant.md", "conformance.json", "skill.json", "workflow.json"].includes(name));
     if (unexpected.length > 0) throw new Error(`${entry.name} contains unsupported files: ${unexpected.join(", ")}`);
     const directories = children.filter(item => item.isDirectory()).map(item => item.name);
-    if (directories.some(name => !["demo", "protocol", "conformance"].includes(name))) throw new Error(`${entry.name} contains an unsupported directory.`);
+    if (directories.some(name => !["demo", "protocol", "conformance", "versions"].includes(name))) throw new Error(`${entry.name} contains an unsupported directory.`);
     if (children.some(item => !item.isFile() && !item.isDirectory())) throw new Error(`${entry.name} contains an unsupported filesystem entry.`);
 
     const manifest = validateManifest(JSON.parse(await readFile(join(skillRoot, "skill.json"), "utf8")), entry.name);
@@ -65,6 +65,9 @@ export async function buildStore() {
     }
     let bootstrap;
     if (manifest.artifactType === "runner-bootstrap") {
+      if (directories.includes("versions")) {
+        await publishArchivedBootstrapPackages({ skillRoot, destination, manifest });
+      }
       bootstrap = await publishBootstrapPackage({ skillRoot, destination, manifest, files, directories });
     } else if (files.includes("workflow.json") || directories.some(name => ["protocol", "conformance"].includes(name))) {
       throw new Error(`${manifest.id} has Bootstrap files but is not a runner-bootstrap artifact.`);
@@ -101,6 +104,38 @@ export async function buildStore() {
   await cp(siteRoot, distRoot, { recursive: true });
   await writeFile(join(distRoot, "catalog.json"), `${JSON.stringify({ schemaVersion: 1, skills }, null, 2)}\n`);
   return { skills };
+}
+
+async function publishArchivedBootstrapPackages({ skillRoot, destination, manifest }) {
+  const versionsRoot = join(skillRoot, "versions");
+  const entries = (await readdir(versionsRoot, { withFileTypes: true }))
+    .filter(entry => entry.isDirectory())
+    .sort((a, b) => a.name.localeCompare(b.name));
+  for (const entry of entries) {
+    if (entry.name === manifest.version) throw new Error(`${manifest.id} archives its current version twice.`);
+    const archiveRoot = join(versionsRoot, entry.name);
+    const children = await readdir(archiveRoot, { withFileTypes: true });
+    const files = children.filter(item => item.isFile()).map(item => item.name).sort();
+    const directories = children.filter(item => item.isDirectory()).map(item => item.name);
+    if (files.some(name => !["SKILL.md", "SKILL.zh-Hant.md", "skill.json", "workflow.json"].includes(name))
+      || directories.some(name => !["protocol", "conformance"].includes(name))) {
+      throw new Error(`${manifest.id}/${entry.name} archive contains unsupported entries.`);
+    }
+    const archivedManifest = validateManifest(
+      JSON.parse(await readFile(join(archiveRoot, "skill.json"), "utf8")),
+      manifest.id
+    );
+    if (archivedManifest.artifactType !== "runner-bootstrap" || archivedManifest.version !== entry.name) {
+      throw new Error(`${manifest.id}/${entry.name} archive manifest does not match its directory.`);
+    }
+    await publishBootstrapPackage({
+      skillRoot: archiveRoot,
+      destination,
+      manifest: archivedManifest,
+      files,
+      directories
+    });
+  }
 }
 
 function validateConformanceEnvelope(value, id) {

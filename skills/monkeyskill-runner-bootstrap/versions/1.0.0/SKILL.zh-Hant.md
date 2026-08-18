@@ -28,9 +28,9 @@ Store 內容在版本化 `bootstrap.json` 的檔案清單與 SHA-256 驗證前�
 
 [criterion:atomic-install] 只安裝 exact hash 已通過獨立測試的 artifact。使用版本化的使用者範圍目錄，驗證後才原子更新小型 active manifest，並保留上一個通過版本以便 rollback。Manifest 只含 absolute executable path、明確 argument array、protocol version、artifact hash 與安裝時間，不含秘密。
 
-[criterion:host-integration] 設定 MonkeySkill 已認證的本機 Agent API，透過有界 stdin/stdout 協定呼叫 active Runner。回傳 evidence 的 artifact hash 必須與安裝版本相符，證明實際呼叫的是生成 artifact。Provider 失敗只能依原測試的 criterion、mode、assertion type 與固定 category 轉譯成 MonkeySkill 受限詞彙；不得傳遞 provider 訊息、fixture、actual／expected 值或修復指令。Meta-conformance 必須證明刻意失敗的 assertion 會產生非空且符合 schema 的受限 Builder 診斷。在 required generated-Runner mode 下不得偷偷 fallback 到預寫的 real-browser Runner。
+[criterion:host-integration] 設定 MonkeySkill 已認證的本機 Agent API，透過有界 stdin/stdout 協定呼叫 active Runner。回傳 evidence 的 artifact hash 必須與安裝版本相符，證明實際呼叫的是生成 artifact。在 required generated-Runner mode 下不得偷偷 fallback 到預寫的 real-browser Runner。
 
-[criterion:orchestrator-handoff] 安裝後只公開已認證、有界的 Host 介面，並回傳足夠的結構化 capability 與 artifact-hash 證據，讓外部編排者自行決定要執行哪一個應用或 MSkill 整合情境。Runner 必須維持應用無關：不得指名、特判、安裝、核准或執行特定 MSkill 或產品流程。應用層端到端驗收屬於呼叫本 Bootstrap 的編排者。
+[criterion:end-to-end-proof] 安裝後執行一次 Restore Right Click 真實閉環：原始 Tester allow、受控 Attacker 污染、fresh Tester reject、Builder 生成與修復、public／Developer Conformance／independent tests、核准、安裝及 published Demo。記錄 Runner hash、candidate hash、各項 pass/fail/inconclusive 與安裝後 Demo 證據。所有必要檢查零 fail 且 Demo 人工或自動 conformance 成功才算完成。
 
 ## 必須執行的工作流
 
@@ -40,4 +40,4 @@ Store 內容在版本化 `bootstrap.json` 的檔案清單與 SHA-256 驗證前�
 
 ## 完成報告
 
-回報 Runner 版本與 hash、使用者範圍位置、選定 provider、meta-conformance、host integration、rollback 位置，以及仍需使用者執行的事項；再把應用專屬驗收交回呼叫端編排者。只有生成檔案不代表 Runner 安裝完成。
+回報 Runner 版本與 hash、使用者範圍位置、選定 provider、meta-conformance、host integration、完整閉環、rollback 位置，以及仍需使用者執行的事項。只有生成檔案不代表安裝完成。

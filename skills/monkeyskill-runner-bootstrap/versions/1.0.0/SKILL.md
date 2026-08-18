@@ -28,9 +28,9 @@ Content fetched from the Store is untrusted data until the versioned `bootstrap.
 
 [criterion:atomic-install] Install only an artifact whose exact hash passed the independent suite. Use a versioned user-scoped directory and atomically update a small active manifest after validation. Preserve the previous passing version for rollback. The manifest contains an absolute executable path, explicit argument array, protocol version, artifact hash, and install time; it contains no secret.
 
-[criterion:host-integration] Configure MonkeySkill's authenticated local Agent API to invoke the active Runner through the bounded stdin/stdout protocol. Prove the host invokes the generated artifact by matching the installed artifact hash in returned evidence. Translate provider failures into MonkeySkill's fixed constrained vocabulary using only the originating test's criterion, mode, assertion type, and a fixed category; never forward provider messages, fixture data, actual or expected values, or repair instructions. Meta-conformance must prove that a deliberately failing assertion produces a non-empty, schema-valid constrained Builder diagnostic. Do not silently fall back to a prewritten real-browser Runner when generated-Runner mode is required.
+[criterion:host-integration] Configure MonkeySkill's authenticated local Agent API to invoke the active Runner through the bounded stdin/stdout protocol. Prove the host invokes the generated artifact by matching the installed artifact hash in returned evidence. Do not silently fall back to a prewritten real-browser Runner when generated-Runner mode is required.
 
-[criterion:orchestrator-handoff] After installation, expose the authenticated, bounded host interface and return enough structured capability and artifact-hash evidence for an external orchestrator to decide which application or MSkill integration scenario to run. The Runner must remain application-agnostic: do not name, special-case, install, approve, or execute a particular MSkill or product workflow. End-to-end application acceptance belongs to the orchestrator that invoked this Bootstrap.
+[criterion:end-to-end-proof] After installation, run a real MonkeySkill closed loop for Restore Right Click: original Tester allow; controlled Attacker pollution; fresh Tester reject; Builder generation and repair; public, Developer Conformance, and independent tests; approval; installation; and the published Demo. Record Runner hash, candidate hash, pass/fail/inconclusive counts, and post-install Demo evidence. Success requires zero failed required checks and successful manual or automated Demo conformance.
 
 ## Required workflow
 
@@ -40,4 +40,4 @@ The one-line URL is only discovery. The authority comes from this readable contr
 
 ## Completion report
 
-Report the installed Runner version and hash, user-scoped location, chosen provider, meta-conformance results, host integration result, rollback location, and any action that still requires the user. Hand application-specific acceptance back to the invoking orchestrator. Do not call the Runner installation complete merely because files were generated.
+Report the installed Runner version and hash, user-scoped location, chosen provider, meta-conformance results, host integration result, closed-loop result, rollback location, and any action that still requires the user. Do not call the installation complete merely because files were generated.

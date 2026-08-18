@@ -13,9 +13,8 @@
     { "id": "deliberately-failing-assertion", "kind": "negative", "criterion": "negative-canaries", "expect": "one-fail-zero-false-pass" },
     { "id": "stdout-protocol-purity", "kind": "positive", "criterion": "isolated-transport", "expect": "exactly-one-json-response" },
     { "id": "secret-absence", "kind": "positive", "criterion": "isolated-transport", "expect": "runner-environment-has-no-agent-or-llm-token" },
-    { "id": "host-runtime-hash", "kind": "positive", "criterion": "host-integration", "expect": "response-hash-equals-active-manifest" },
-    { "id": "constrained-repair-projection", "kind": "negative", "criterion": "host-integration", "expect": "failing-assertion-projects-nonempty-criterion-mode-category-assertion-without-test-content" }
+    { "id": "host-runtime-hash", "kind": "positive", "criterion": "host-integration", "expect": "response-hash-equals-active-manifest" }
   ],
-  "diagnosticProjection": ["criterion", "mode", "category", "assertion"],
-  "forbiddenDiagnosticFields": ["testId", "fixture", "actual", "expected", "providerMessage", "hiddenCaseId", "repairInstruction"]
+  "diagnosticProjection": ["criterion", "category", "provider", "phase"],
+  "forbiddenDiagnosticFields": ["fixture", "expected", "assertion", "hiddenCaseId", "repairInstruction"]
 }
