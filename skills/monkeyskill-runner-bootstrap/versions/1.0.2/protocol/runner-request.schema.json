@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://allenyllee.github.io/monkeyskill-store/protocol/runner-request.schema.json",
+  "title": "MonkeySkill Runner request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "requestId", "kind", "testSpec", "build", "limits"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "requestId": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "kind": { "enum": ["browser-developer-conformance"] },
+    "testSpec": { "type": "object" },
+    "build": { "type": "object" },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timeoutMs", "maxTests", "network"],
+      "properties": {
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 300000 },
+        "maxTests": { "type": "integer", "minimum": 1, "maximum": 200 },
+        "network": { "const": "loopback-only" }
+      }
+    }
+  }
+}

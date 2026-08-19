@@ -9,13 +9,13 @@
     },
     "builder": {
       "fresh": true,
-      "reads": ["skill.json", "SKILL.md", "protocol/runner-request.schema.json", "protocol/runner-response.schema.json", "protocol/active-runner.schema.json", "protocol/host-dsl-profile.json"],
+      "reads": ["skill.json", "SKILL.md", "protocol/runner-request.schema.json", "protocol/runner-response.schema.json", "protocol/active-runner.schema.json"],
       "mustNotRead": ["conformance/meta-conformance.json", "tester-reasoning", "prior-runner-source"],
       "returns": ["complete-source-tree", "launch-manifest", "implementation-notes"]
     },
     "tester": {
       "fresh": true,
-      "reads": ["skill.json", "SKILL.md", "protocol/runner-request.schema.json", "protocol/runner-response.schema.json", "protocol/active-runner.schema.json", "protocol/host-dsl-profile.json", "conformance/meta-conformance.json", "generated-artifact"],
+      "reads": ["skill.json", "SKILL.md", "protocol/runner-request.schema.json", "protocol/runner-response.schema.json", "protocol/active-runner.schema.json", "conformance/meta-conformance.json", "generated-artifact"],
       "mustNotRead": ["builder-reasoning"],
       "returns": ["structured-meta-conformance-evidence", "artifact-hash", "constrained-diagnostics"]
     }

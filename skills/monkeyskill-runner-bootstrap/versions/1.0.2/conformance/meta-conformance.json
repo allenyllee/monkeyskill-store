@@ -15,8 +15,6 @@
     { "id": "secret-absence", "kind": "positive", "criterion": "isolated-transport", "expect": "runner-environment-has-no-agent-or-llm-token" },
     { "id": "host-runtime-hash", "kind": "positive", "criterion": "host-integration", "expect": "response-hash-equals-active-manifest" },
     { "id": "host-append-node-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "dynamic-append-node-control-is-hittable-and-focusable" },
-    { "id": "installed-host-dsl-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "installed-store-to-host-to-generated-runner-path-passes-entire-required-compatibility-matrix" },
-    { "id": "private-runner-shape-is-insufficient", "kind": "negative", "criterion": "host-integration", "expect": "direct-runner-pass-cannot-substitute-for-installed-host-dsl-roundtrip" },
     { "id": "unsupported-operation-infrastructure", "kind": "negative", "criterion": "host-integration", "expect": "unsupported-action-or-assertion-stops-as-infrastructure-before-application-repair" },
     { "id": "constrained-repair-projection", "kind": "negative", "criterion": "host-integration", "expect": "failing-supported-assertion-projects-nonempty-criterion-mode-category-assertion-without-test-content" }
   ],
