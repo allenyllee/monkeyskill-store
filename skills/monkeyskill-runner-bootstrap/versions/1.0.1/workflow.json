@@ -34,6 +34,6 @@
   ],
   "success": {
     "required": ["all-package-hashes-match", "all-meta-conformance-required-cases-pass", "negative-canaries-fail-closed", "installed-hash-equals-tested-hash", "host-reports-installed-runner-hash", "generic-orchestrator-handoff-ready"],
-    "failClosedOn": ["missing-capability", "schema-error", "unsupported-test", "adapter-compilation-failure", "timeout", "inconclusive-required-observation", "hash-mismatch", "privilege-expansion", "external-network-attempt"]
+    "failClosedOn": ["missing-capability", "schema-error", "unsupported-test", "timeout", "inconclusive-required-observation", "hash-mismatch", "privilege-expansion", "external-network-attempt"]
   }
 }

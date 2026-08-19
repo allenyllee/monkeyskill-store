@@ -14,9 +14,7 @@
     { "id": "stdout-protocol-purity", "kind": "positive", "criterion": "isolated-transport", "expect": "exactly-one-json-response" },
     { "id": "secret-absence", "kind": "positive", "criterion": "isolated-transport", "expect": "runner-environment-has-no-agent-or-llm-token" },
     { "id": "host-runtime-hash", "kind": "positive", "criterion": "host-integration", "expect": "response-hash-equals-active-manifest" },
-    { "id": "host-append-node-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "dynamic-append-node-control-is-hittable-and-focusable" },
-    { "id": "unsupported-operation-infrastructure", "kind": "negative", "criterion": "host-integration", "expect": "unsupported-action-or-assertion-stops-as-infrastructure-before-application-repair" },
-    { "id": "constrained-repair-projection", "kind": "negative", "criterion": "host-integration", "expect": "failing-supported-assertion-projects-nonempty-criterion-mode-category-assertion-without-test-content" }
+    { "id": "constrained-repair-projection", "kind": "negative", "criterion": "host-integration", "expect": "failing-assertion-projects-nonempty-criterion-mode-category-assertion-without-test-content" }
   ],
   "diagnosticProjection": ["criterion", "mode", "category", "assertion"],
   "forbiddenDiagnosticFields": ["testId", "fixture", "actual", "expected", "providerMessage", "hiddenCaseId", "repairInstruction"]

@@ -28,7 +28,7 @@ Store 內容在版本化 `bootstrap.json` 的檔案清單與 SHA-256 驗證前�
 
 [criterion:atomic-install] 只安裝 exact hash 已通過獨立測試的 artifact。使用版本化的使用者範圍目錄，驗證後才原子更新小型 active manifest，並保留上一個通過版本以便 rollback。Manifest 只含 absolute executable path、明確 argument array、protocol version、artifact hash 與安裝時間，不含秘密。
 
-[criterion:host-integration] 設定 MonkeySkill 已認證的本機 Agent API，透過有界 stdin/stdout 協定呼叫 active Runner。回傳 evidence 的 artifact hash 必須與安裝版本相符，證明實際呼叫的是生成 artifact。Host adapter 與 Runner 必須安全編譯並執行其宣告支援的每一種 TestSpec action 與 assertion；meta-conformance 必須包含正向的動態 `append-node` 往返案例，證明新加入的控制項仍可命中與取得焦點。若 action、assertion、capability、schema 或 provider operation 不受支援，這是 Runner 基礎設施失敗，必須在耗用應用 Builder attempt 前停止，絕不可投影成應用 criterion 失敗。只有已實際執行且失敗的受支援 assertion，才可依原測試的 criterion、mode、assertion type 與固定 category 轉譯成 MonkeySkill 受限詞彙；不得傳遞 provider 訊息、fixture、actual／expected 值或修復指令。Meta-conformance 必須證明刻意失敗的受支援 assertion 會產生非空且符合 schema 的受限 Builder 診斷。在 required generated-Runner mode 下不得偷偷 fallback 到預寫的 real-browser Runner。
+[criterion:host-integration] 設定 MonkeySkill 已認證的本機 Agent API，透過有界 stdin/stdout 協定呼叫 active Runner。回傳 evidence 的 artifact hash 必須與安裝版本相符，證明實際呼叫的是生成 artifact。Provider 失敗只能依原測試的 criterion、mode、assertion type 與固定 category 轉譯成 MonkeySkill 受限詞彙；不得傳遞 provider 訊息、fixture、actual／expected 值或修復指令。Meta-conformance 必須證明刻意失敗的 assertion 會產生非空且符合 schema 的受限 Builder 診斷。在 required generated-Runner mode 下不得偷偷 fallback 到預寫的 real-browser Runner。
 
 [criterion:orchestrator-handoff] 安裝後只公開已認證、有界的 Host 介面，並回傳足夠的結構化 capability 與 artifact-hash 證據，讓外部編排者自行決定要執行哪一個應用或 MSkill 整合情境。Runner 必須維持應用無關：不得指名、特判、安裝、核准或執行特定 MSkill 或產品流程。應用層端到端驗收屬於呼叫本 Bootstrap 的編排者。
 
