@@ -100,6 +100,30 @@
       "assertions": [{ "type": "hit-test", "target": "target", "expected": true, "point": "center" }]
     },
     {
+      "id": "regression-transient-empty-container",
+      "kind": "behavior",
+      "criterion": "pointer-overlays",
+      "mode": "absolute",
+      "fixture": {
+        "nodes": [
+          { "id": "wrap", "tag": "div", "parent": null, "text": "", "attributes": {}, "styles": { "position": "relative", "width": "240px", "height": "120px" } },
+          { "id": "background", "tag": "div", "parent": "wrap", "text": "background", "attributes": {}, "styles": { "width": "240px", "height": "120px", "backgroundImage": "linear-gradient(rgb(20, 40, 60), rgb(55, 102, 126))" }, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } },
+          { "id": "app-root", "tag": "div", "parent": "wrap", "text": "", "attributes": { "class": "app-root" }, "styles": {}, "rect": { "x": 8, "y": 8, "width": 240, "height": 120 } }
+        ],
+        "rules": [{ "target": "app-root", "pseudo": null, "styles": { "position": "absolute", "inset": "0" } }]
+      },
+      "blockers": [],
+      "steps": [
+        { "action": "append-node", "node": { "id": "action", "tag": "button", "parent": "app-root", "text": "open", "attributes": {}, "styles": { "width": "120px", "height": "40px" }, "rect": { "x": 68, "y": 48, "width": 120, "height": 40 } } },
+        { "action": "wait", "ms": 100 },
+        { "action": "click-control", "target": "action" }
+      ],
+      "assertions": [
+        { "type": "hit-test", "target": "action", "expected": true, "point": "center" },
+        { "type": "active-element", "target": "action", "expected": true }
+      ]
+    },
+    {
       "id": "regression-selection-dismissal",
       "kind": "behavior",
       "criterion": "selection-dismissal",
