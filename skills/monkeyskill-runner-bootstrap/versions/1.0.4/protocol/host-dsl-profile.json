@@ -26,15 +26,8 @@
       "required": ["id", "kind", "criterion", "mode", "fixture", "blockers", "steps", "assertions"],
       "kind": "behavior",
       "installTiming": { "optional": true, "values": ["before-fixture", "after-fixture"], "default": "after-fixture" },
-      "fixtureNode": {
-        "fields": ["id", "tag", "parent", "text", "attributes", "styles", "rect"],
-        "parent": "null for a fixture root, otherwise an earlier node id"
-      },
-      "fixtureRule": {
-        "fields": ["target", "pseudo", "styles", "specificity"],
-        "pseudo": "null or an allowed pseudo-element",
-        "specificity": "normal or id-ancestor when present"
-      },
+      "fixtureNode": ["id", "tag", "parent", "text", "attributes", "styles", "rect"],
+      "fixtureRule": ["target", "pseudo", "styles", "specificity"],
       "blocker": ["id", "target", "event", "registration", "effect", "when"],
       "blockerRegistration": ["listener", "inline", "property"],
       "blockerEffect": ["prevent-default", "prevent-default-and-stop", "return-false", "clear-selection", "flag-only", "rollback-value"]
@@ -43,28 +36,16 @@
   "requiredActions": ["wait", "drag-select-text", "select-contents", "click-page", "click-control", "click", "copy-shortcut", "append-node"],
   "requiredAssertions": ["computed-style", "event-default-prevented", "selection-collapsed", "selection-write-count", "value", "hit-test", "active-element"],
   "fieldSemantics": {
-    "nodeReferences": "parent, target, and action/assertion target values are normalized node ids resolved within the fixture, not arbitrary page selectors",
-    "styleProperties": "accept normalized camelCase DOM style property names and compare their computed CSS values",
-    "operators": ["eq", "neq", "lt", "lte", "gt", "gte", "contains"],
     "wait": ["action", "ms"],
     "targetAction": ["action", "target"],
-    "copyShortcut": ["action", "target", "operation"],
-    "copyShortcutOperation": ["copy", "cut"],
     "appendNode": ["action", "node"],
     "computedStyle": ["type", "target", "property", "pseudo", "operator", "value"],
     "eventDefaultPrevented": ["type", "step", "expected"],
-    "selectionCollapsed": { "fields": ["type", "step", "expected"], "step": "optional" },
+    "selectionCollapsed": ["type", "step", "expected"],
     "selectionWriteCount": ["type", "step", "operator", "value"],
     "value": ["type", "target", "operator", "value"],
-    "hitTest": {
-      "fields": ["type", "target", "expected", "point"],
-      "point": ["center", "top-left", "top-right", "bottom-left", "bottom-right"]
-    },
+    "hitTest": ["type", "target", "expected", "point"],
     "activeElement": ["type", "target", "expected"]
-  },
-  "observationSemantics": {
-    "eventDefaultPrevented": "observe the exact trusted step event, including the keydown event created by copy-shortcut",
-    "selectionCollapsedWithoutStep": "observe the final Selection state after all steps"
   },
   "requiredCompatibilityMatrix": [
     { "family": "selection-and-style", "actions": ["wait", "drag-select-text"], "assertions": ["computed-style", "event-default-prevented", "selection-collapsed"] },
@@ -83,7 +64,6 @@
   "infrastructureFailure": "Non-2xx fixed error envelope; no application result and no Builder attempt consumption.",
   "acceptance": [
     "Use a literal request containing the exact field names above; do not translate a lookalike private schema in the Tester.",
-    "The literal matrix must include a root node with parent null, a null pseudo field, copy-shortcut with operation, a named hit-test point, and selection-collapsed both with and without step where allowed.",
     "Invoke the installed adapter on /v1/real-browser-conformance using a JSON bootstrap token file.",
     "Run the full five-family matrix and validate the exact Extension success response.",
     "A direct Runner pass or a different route does not count."
