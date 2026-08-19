@@ -16,9 +16,6 @@
     { "id": "host-runtime-hash", "kind": "positive", "criterion": "host-integration", "expect": "response-hash-equals-active-manifest" },
     { "id": "host-append-node-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "dynamic-append-node-control-is-hittable-and-focusable" },
     { "id": "installed-host-dsl-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "installed-store-to-host-to-generated-runner-path-passes-entire-required-compatibility-matrix" },
-    { "id": "exact-extension-wire-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "literal-normalized-request-on-real-browser-conformance-route-returns-exact-extension-response-shape" },
-    { "id": "json-bootstrap-token-file", "kind": "positive", "criterion": "host-integration", "expect": "adapter-extracts-bounded-token-member-without-using-or-echoing-the-whole-json-file" },
-    { "id": "normalized-field-names", "kind": "positive", "criterion": "host-integration", "expect": "behavior-parent-target-registration-effect-and-js-css-fields-are-accepted-literally" },
     { "id": "private-runner-shape-is-insufficient", "kind": "negative", "criterion": "host-integration", "expect": "direct-runner-pass-cannot-substitute-for-installed-host-dsl-roundtrip" },
     { "id": "unsupported-operation-infrastructure", "kind": "negative", "criterion": "host-integration", "expect": "unsupported-action-or-assertion-stops-as-infrastructure-before-application-repair" },
     { "id": "constrained-repair-projection", "kind": "negative", "criterion": "host-integration", "expect": "failing-supported-assertion-projects-nonempty-criterion-mode-category-assertion-without-test-content" }

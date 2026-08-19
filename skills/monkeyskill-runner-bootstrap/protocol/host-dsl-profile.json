@@ -1,62 +1,72 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "profile": "monkeyskill-normalized-developer-conformance-v1",
-  "purpose": "Application-agnostic compatibility contract between the MonkeySkill Store host and a generated evidence Runner.",
-  "input": {
-    "request": ["testSpec", "build"],
-    "build": "A generated Build object with a modes map; each selected mode contains declarative CSS and JavaScript strings.",
-    "testSpec": "A normalized schemaVersion 1 Developer Conformance object with behavior tests.",
-    "behaviorTest": ["id", "kind", "criterion", "mode", "installTiming", "fixture", "blockers", "steps", "assertions"],
-    "fixture": ["nodes", "rules"],
-    "installTiming": ["before-fixture", "after-fixture"]
+  "purpose": "Exact application-agnostic wire compatibility contract between the MonkeySkill Extension/Agent API and a generated evidence Runner.",
+  "authentication": {
+    "tokenFileFormat": { "type": "json-object", "required": ["token"], "token": { "type": "string", "minLength": 32, "maxLength": 512 } },
+    "requestHeader": "Authorization: Bearer <token member>",
+    "forbidden": ["using-the-entire-json-file-as-token", "echoing-token", "passing-token-to-runner-environment"]
   },
-  "requiredActions": [
-    "wait", "drag-select-text", "select-contents", "click-page", "click-control", "click",
-    "copy-shortcut", "append-node"
-  ],
-  "requiredAssertions": [
-    "computed-style", "event-default-prevented", "selection-collapsed", "selection-write-count",
-    "value", "hit-test", "active-element"
-  ],
-  "requiredFixtureFeatures": [
-    "ordered-parent-child-nodes", "text-and-attributes", "inline-styles", "rect-geometry",
-    "author-rules-with-null-or-selection-pseudo", "listener-inline-property-blockers",
-    "prevent-default-return-false-clear-selection-rollback-value-effects"
-  ],
-  "requiredCompatibilityMatrix": [
-    {
-      "family": "selection-and-style",
-      "actions": ["wait", "drag-select-text"],
-      "assertions": ["computed-style", "event-default-prevented", "selection-collapsed"]
-    },
-    {
-      "family": "keyboard-default-and-value",
-      "actions": ["copy-shortcut"],
-      "assertions": ["event-default-prevented", "value"]
-    },
-    {
-      "family": "overlay-hit-testing",
-      "actions": ["wait"],
-      "assertions": ["hit-test"]
-    },
-    {
-      "family": "dynamic-application-container",
-      "actions": ["append-node", "wait", "click-control"],
-      "assertions": ["hit-test", "active-element"]
-    },
-    {
-      "family": "selection-dismiss-and-resume",
-      "actions": ["drag-select-text", "click-page", "drag-select-text"],
-      "assertions": ["event-default-prevented", "selection-collapsed", "selection-write-count"]
+  "http": {
+    "method": "POST",
+    "route": "/v1/real-browser-conformance",
+    "contentType": "application/json",
+    "requestKeys": ["testSpec", "build"],
+    "successStatus": 200,
+    "infrastructureStatus": "non-2xx"
+  },
+  "build": {
+    "required": ["modes"],
+    "modeArtifact": { "required": ["js", "css"], "js": "string", "css": "string" }
+  },
+  "testSpec": {
+    "required": ["schemaVersion", "tests"],
+    "schemaVersion": 1,
+    "behaviorTest": {
+      "required": ["id", "kind", "criterion", "mode", "fixture", "blockers", "steps", "assertions"],
+      "kind": "behavior",
+      "installTiming": { "optional": true, "values": ["before-fixture", "after-fixture"], "default": "after-fixture" },
+      "fixtureNode": ["id", "tag", "parent", "text", "attributes", "styles", "rect"],
+      "fixtureRule": ["target", "pseudo", "styles", "specificity"],
+      "blocker": ["id", "target", "event", "registration", "effect", "when"],
+      "blockerRegistration": ["listener", "inline", "property"],
+      "blockerEffect": ["prevent-default", "prevent-default-and-stop", "return-false", "clear-selection", "flag-only", "rollback-value"]
     }
+  },
+  "requiredActions": ["wait", "drag-select-text", "select-contents", "click-page", "click-control", "click", "copy-shortcut", "append-node"],
+  "requiredAssertions": ["computed-style", "event-default-prevented", "selection-collapsed", "selection-write-count", "value", "hit-test", "active-element"],
+  "fieldSemantics": {
+    "wait": ["action", "ms"],
+    "targetAction": ["action", "target"],
+    "appendNode": ["action", "node"],
+    "computedStyle": ["type", "target", "property", "pseudo", "operator", "value"],
+    "eventDefaultPrevented": ["type", "step", "expected"],
+    "selectionCollapsed": ["type", "step", "expected"],
+    "selectionWriteCount": ["type", "step", "operator", "value"],
+    "value": ["type", "target", "operator", "value"],
+    "hitTest": ["type", "target", "expected", "point"],
+    "activeElement": ["type", "target", "expected"]
+  },
+  "requiredCompatibilityMatrix": [
+    { "family": "selection-and-style", "actions": ["wait", "drag-select-text"], "assertions": ["computed-style", "event-default-prevented", "selection-collapsed"] },
+    { "family": "keyboard-default-and-value", "actions": ["copy-shortcut"], "assertions": ["event-default-prevented", "value"] },
+    { "family": "overlay-hit-testing", "actions": ["wait"], "assertions": ["hit-test"] },
+    { "family": "dynamic-application-container", "actions": ["append-node", "wait", "click-control"], "assertions": ["hit-test", "active-element"] },
+    { "family": "selection-dismiss-and-resume", "actions": ["drag-select-text", "click-page", "drag-select-text"], "assertions": ["event-default-prevented", "selection-collapsed", "selection-write-count"] }
   ],
-  "hostRequirements": [
-    "The generated delivery includes the compatible Host adapter or a drop-in request compiler; installation switches both Runner and adapter atomically.",
-    "The compatibility matrix is invoked through the same authenticated localhost HTTP route used by the Extension.",
-    "The candidate mode is installed at the declared before-fixture or after-fixture boundary.",
-    "Each step captures a step-indexed observation checkpoint before the next step.",
-    "Unknown or uncompiled operations fail as infrastructure before any application Builder repair is emitted.",
-    "A direct private Runner request that bypasses the installed Host adapter is not acceptance evidence."
+  "extensionSuccessResponse": {
+    "required": ["passed", "failed", "inconclusive", "total", "capabilities", "results", "evidence", "runner"],
+    "resultRequired": ["criterion", "mode", "ok", "inconclusive", "category"],
+    "runnerRequired": ["artifactHash", "provider", "protocolVersion"],
+    "invariants": ["passed+failed+inconclusive=total", "total=results.length", "runner.artifactHash=active-artifact-hash"]
+  },
+  "applicationFailure": "HTTP 200 with failed>0 and constrained result entries only after supported assertions actually execute.",
+  "infrastructureFailure": "Non-2xx fixed error envelope; no application result and no Builder attempt consumption.",
+  "acceptance": [
+    "Use a literal request containing the exact field names above; do not translate a lookalike private schema in the Tester.",
+    "Invoke the installed adapter on /v1/real-browser-conformance using a JSON bootstrap token file.",
+    "Run the full five-family matrix and validate the exact Extension success response.",
+    "A direct Runner pass or a different route does not count."
   ],
   "security": {
     "network": "loopback-only",

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "profile": "monkeyskill-normalized-developer-conformance-v1",
+  "purpose": "Application-agnostic compatibility contract between the MonkeySkill Store host and a generated evidence Runner.",
+  "input": {
+    "request": ["testSpec", "build"],
+    "build": "A generated Build object with a modes map; each selected mode contains declarative CSS and JavaScript strings.",
+    "testSpec": "A normalized schemaVersion 1 Developer Conformance object with behavior tests.",
+    "behaviorTest": ["id", "kind", "criterion", "mode", "installTiming", "fixture", "blockers", "steps", "assertions"],
+    "fixture": ["nodes", "rules"],
+    "installTiming": ["before-fixture", "after-fixture"]
+  },
+  "requiredActions": [
+    "wait", "drag-select-text", "select-contents", "click-page", "click-control", "click",
+    "copy-shortcut", "append-node"
+  ],
+  "requiredAssertions": [
+    "computed-style", "event-default-prevented", "selection-collapsed", "selection-write-count",
+    "value", "hit-test", "active-element"
+  ],
+  "requiredFixtureFeatures": [
+    "ordered-parent-child-nodes", "text-and-attributes", "inline-styles", "rect-geometry",
+    "author-rules-with-null-or-selection-pseudo", "listener-inline-property-blockers",
+    "prevent-default-return-false-clear-selection-rollback-value-effects"
+  ],
+  "requiredCompatibilityMatrix": [
+    {
+      "family": "selection-and-style",
+      "actions": ["wait", "drag-select-text"],
+      "assertions": ["computed-style", "event-default-prevented", "selection-collapsed"]
+    },
+    {
+      "family": "keyboard-default-and-value",
+      "actions": ["copy-shortcut"],
+      "assertions": ["event-default-prevented", "value"]
+    },
+    {
+      "family": "overlay-hit-testing",
+      "actions": ["wait"],
+      "assertions": ["hit-test"]
+    },
+    {
+      "family": "dynamic-application-container",
+      "actions": ["append-node", "wait", "click-control"],
+      "assertions": ["hit-test", "active-element"]
+    },
+    {
+      "family": "selection-dismiss-and-resume",
+      "actions": ["drag-select-text", "click-page", "drag-select-text"],
+      "assertions": ["event-default-prevented", "selection-collapsed", "selection-write-count"]
+    }
+  ],
+  "hostRequirements": [
+    "The generated delivery includes the compatible Host adapter or a drop-in request compiler; installation switches both Runner and adapter atomically.",
+    "The compatibility matrix is invoked through the same authenticated localhost HTTP route used by the Extension.",
+    "The candidate mode is installed at the declared before-fixture or after-fixture boundary.",
+    "Each step captures a step-indexed observation checkpoint before the next step.",
+    "Unknown or uncompiled operations fail as infrastructure before any application Builder repair is emitted.",
+    "A direct private Runner request that bypasses the installed Host adapter is not acceptance evidence."
+  ],
+  "security": {
+    "network": "loopback-only",
+    "diagnostics": ["criterion", "mode", "category", "assertion"],
+    "forbiddenDiagnosticFields": ["testId", "fixture", "actual", "expected", "providerMessage", "repairInstruction"]
+  }
+}
