@@ -17,7 +17,6 @@
     { "id": "host-append-node-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "dynamic-append-node-control-is-hittable-and-focusable" },
     { "id": "installed-host-dsl-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "installed-store-to-host-to-generated-runner-path-passes-entire-required-compatibility-matrix" },
     { "id": "exact-extension-wire-roundtrip", "kind": "positive", "criterion": "host-integration", "expect": "literal-normalized-request-on-real-browser-conformance-route-returns-exact-extension-response-shape" },
-    { "id": "extension-build-envelope-projection", "kind": "positive", "criterion": "host-integration", "expect": "host-accepts-complete-normalized-extension-build-and-runner-receives-build-with-exactly-modes" },
     { "id": "json-bootstrap-token-file", "kind": "positive", "criterion": "host-integration", "expect": "adapter-extracts-bounded-token-member-without-using-or-echoing-the-whole-json-file" },
     { "id": "normalized-field-names", "kind": "positive", "criterion": "host-integration", "expect": "behavior-null-root-parent-node-id-references-null-pseudo-camel-case-styles-neq-copy-operation-keydown-observation-named-hit-point-optional-selection-step-target-registration-effect-and-js-css-fields-are-accepted-literally" },
     { "id": "private-runner-shape-is-insufficient", "kind": "negative", "criterion": "host-integration", "expect": "direct-runner-pass-cannot-substitute-for-installed-host-dsl-roundtrip" },

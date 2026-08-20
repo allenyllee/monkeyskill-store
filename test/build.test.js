@@ -57,7 +57,7 @@ test("Store publishes an immutable hashed Runner Bootstrap package", async () =>
   assert.equal(catalog.skills[0].id, "monkeyskill-runner-bootstrap", "Bootstrap should be prominent in the sorted catalog.");
   const bootstrap = catalog.skills.find(skill => skill.id === "monkeyskill-runner-bootstrap");
   assert.equal(bootstrap.artifactType, "runner-bootstrap");
-  assert.equal(bootstrap.bootstrapUrl, "skills/monkeyskill-runner-bootstrap/1.0.5/bootstrap.json");
+  assert.equal(bootstrap.bootstrapUrl, "skills/monkeyskill-runner-bootstrap/1.0.6/bootstrap.json");
   assert.match(bootstrap.bootstrapPackageHash, /^[a-f0-9]{64}$/);
   const pkg = JSON.parse(await readFile(new URL(`../dist/${bootstrap.bootstrapUrl}`, import.meta.url), "utf8"));
   assert.equal(pkg.packageHash, bootstrap.bootstrapPackageHash);
@@ -71,11 +71,13 @@ test("Store publishes an immutable hashed Runner Bootstrap package", async () =>
   assert.equal(archived103.version, "1.0.3", "The preceding Host integration protocol must remain immutable and available.");
   const archived104 = JSON.parse(await readFile(new URL("../dist/skills/monkeyskill-runner-bootstrap/1.0.4/bootstrap.json", import.meta.url), "utf8"));
   assert.equal(archived104.version, "1.0.4", "The prior exact-wire protocol must remain immutable and available.");
+  const archived105 = JSON.parse(await readFile(new URL("../dist/skills/monkeyskill-runner-bootstrap/1.0.5/bootstrap.json", import.meta.url), "utf8"));
+  assert.equal(archived105.version, "1.0.5", "The preceding application-agnostic Runner protocol must remain immutable and available.");
   assert.equal(pkg.entrypoint, "SKILL.md");
   assert.ok(pkg.files.some(file => file.path === "workflow.json"));
   assert.ok(pkg.files.some(file => file.path === "conformance/meta-conformance.json"));
   assert.ok(pkg.files.every(file => /^[a-f0-9]{64}$/.test(file.sha256)));
-  const bootstrapInstructions = await readFile(new URL("../dist/skills/monkeyskill-runner-bootstrap/1.0.5/SKILL.md", import.meta.url), "utf8");
+  const bootstrapInstructions = await readFile(new URL("../dist/skills/monkeyskill-runner-bootstrap/1.0.6/SKILL.md", import.meta.url), "utf8");
   assert.doesNotMatch(bootstrapInstructions, /restore-right-click|Restore Right Click/, "Runner Bootstrap must stay application-agnostic.");
   assert.match(bootstrapInstructions, /orchestrator-handoff/);
   assert.match(bootstrapInstructions, /append-node/);

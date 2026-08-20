@@ -16,11 +16,7 @@
     "infrastructureStatus": "non-2xx"
   },
   "build": {
-    "extensionEnvelopeRequired": ["schemaVersion", "skillId", "skillVersion", "artifactType", "execution", "summary", "modes"],
-    "hostProjection": {
-      "runnerBuildExactKeys": ["modes"],
-      "rule": "Validate the complete Extension Build envelope, then pass exactly { modes: build.modes } to the private Runner request. Never forward Extension-only metadata into a Runner schema that permits only modes."
-    },
+    "required": ["modes"],
     "modeArtifact": { "required": ["js", "css"], "js": "string", "css": "string" }
   },
   "testSpec": {
@@ -88,7 +84,6 @@
   "acceptance": [
     "Use a literal request containing the exact field names above; do not translate a lookalike private schema in the Tester.",
     "The literal matrix must include a root node with parent null, a null pseudo field, copy-shortcut with operation, a named hit-test point, and selection-collapsed both with and without step where allowed.",
-    "The literal Host request must carry the complete normalized Extension Build envelope, while the captured Runner stdin request must contain build with exactly one key: modes.",
     "Invoke the installed adapter on /v1/real-browser-conformance using a JSON bootstrap token file.",
     "Run the full five-family matrix and validate the exact Extension success response.",
     "A direct Runner pass or a different route does not count."
