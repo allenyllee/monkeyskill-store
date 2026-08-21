@@ -10,9 +10,13 @@ security gate. Only the required `allow/reject` differential result reaches Buil
 then runs both TestSpecs locally and asks for explicit approval before installation.
 
 The featured **Build Your Own MonkeySkill Runner** entry is a special, human-readable Bootstrap
-MSkill rather than a normal browser Skill. Its copyable versioned URL identifies a SHA-256-listed
-package containing goals, role separation, a bounded stdin/stdout protocol, and fixed positive and
-negative meta-conformance. A user can paste that single URL into a capable local agent. The agent
+MSkill rather than a normal browser Skill. Its versioned URL identifies a SHA-256-listed package
+containing goals, role separation, a bounded stdin/stdout protocol, and fixed positive and negative
+meta-conformance. The Store's **Copy verified Bootstrap prompt** button asks the published Extension
+to independently download every listed file, verify its bytes and SHA-256, recompute the package
+hash, and compare its version and protocol with the Extension's pinned POC policy. Only Extension
+code constructs and copies the prompt; this page receives success metadata but never the prompt
+body. A user can paste that verified prompt into a capable local agent. The agent
 discovers the current operating environment, asks a fresh Builder to generate a minimal Runner,
 asks a fresh Tester to validate it without Builder reasoning, and atomically installs only the
 exact passing artifact in a user-scoped location. The Store publishes no Runner implementation or

@@ -98,8 +98,10 @@ test("Store publishes an immutable hashed Runner Bootstrap package", async () =>
   assert.match(hostProfile.observationSemantics.eventDefaultPrevented, /keydown/);
   assert.ok(hostProfile.extensionSuccessResponse.required.includes("passed"));
   const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
-  assert.match(source, /copyBootstrapUrl/);
-  assert.match(source, /navigator\.clipboard\.writeText/);
+  assert.match(source, /copyVerifiedBootstrapPrompt/);
+  assert.match(source, /rpc\("verify-bootstrap"/);
+  assert.match(source, /bootstrapPackageHash/);
+  assert.doesNotMatch(source, /navigator\.clipboard\.writeText/);
 });
 
 test("Store labels a disguised non-executable security sample without leaking the answer to Tester", async () => {

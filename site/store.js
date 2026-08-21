@@ -20,7 +20,7 @@ const messages = {
     installedStatus: "已安裝；可重新生成更新。", availableStatus: "由你的 LLM 即時生成後安裝。", viewSource: "查看 Skill 內容", sourceHint: "展開後載入人類可讀的 Skill 內容。", loadingSource: "正在載入 Skill 內容…",
     cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 會傳送 skill.json、人類可讀的 SKILL.md，以及只能阻擋、不能授權的受限 Developer Conformance。Builder 不會看到測試內容。", approveTitle: "核准安裝生成的 Build？",
     footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。", securityExample: "⚠ 惡意安全測試樣本：預期 Tester 拒絕，絕不應產生或安裝 Build。", testSecurity: "測試安全閘門",
-    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "先把這個版本化 URL 貼給本機 Agent；Agent 會生成、獨立測試並安裝使用者範圍 Runner。", copyBootstrap: "複製 Bootstrap URL", copiedBootstrap: "已複製版本化 Bootstrap URL。", copyFailed: "無法複製；請手動複製連結。"
+    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "展開閱讀內容後，讓 Extension 核對此版本、完整 package hash 與 protocol，再複製給本機 Agent。", copyBootstrap: "複製已驗證的 Bootstrap prompt", verifyingBootstrap: "Extension 正在重新下載並驗證 Bootstrap…", copiedBootstrap: "已由 Extension 驗證並複製 v{version}（{hash}…）。", copyFailed: "無法取得已驗證的 Bootstrap prompt：{error}"
   },
   en: {
     connecting: "Connecting to Extension…", ready: "Extension connected", missing: "MonkeySkill Extension not detected",
@@ -29,7 +29,7 @@ const messages = {
     installedStatus: "Installed; regenerate to update.", availableStatus: "Generated on demand by your LLM before installation.", viewSource: "View Skill content", sourceHint: "Expand to load the human-readable Skill content.", loadingSource: "Loading Skill content…",
     cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends skill.json, human-readable SKILL.md, and constrained Developer Conformance that may block but never authorize a build. Builder never sees its test content.", approveTitle: "Approve the generated Build?",
     footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content.", securityExample: "⚠ Malicious security sample: Tester must reject it; no Build should be generated or installed.", testSecurity: "Test security gate",
-    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "Paste this versioned URL into your local agent first. The agent generates, independently tests, and installs a user-scoped Runner.", copyBootstrap: "Copy Bootstrap URL", copiedBootstrap: "Versioned Bootstrap URL copied.", copyFailed: "Unable to copy; copy the link manually."
+    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "Read the content, then let the Extension verify this version, complete package hash, and protocol before copying it to your local agent.", copyBootstrap: "Copy verified Bootstrap prompt", verifyingBootstrap: "The Extension is downloading and verifying the Bootstrap…", copiedBootstrap: "Extension-verified v{version} copied ({hash}…).", copyFailed: "Unable to obtain a verified Bootstrap prompt: {error}"
   }
 };
 let locale = localStorage.getItem("monkeyskill-store-locale")
@@ -237,7 +237,7 @@ function renderCatalog() {
     if (isBootstrap) {
       copyBootstrap.hidden = false;
       copyBootstrap.textContent = t("copyBootstrap");
-      copyBootstrap.addEventListener("click", () => copyBootstrapUrl(skill));
+      copyBootstrap.addEventListener("click", () => copyVerifiedBootstrapPrompt(skill, copyBootstrap));
     }
     const demo = card.querySelector(".demo");
     demo.textContent = t("demo");
@@ -294,14 +294,33 @@ async function revealSkillSource(skill, container) {
   }
 }
 
-async function copyBootstrapUrl(skill) {
+async function copyVerifiedBootstrapPrompt(skill, button) {
+  const originalText = button.textContent;
   try {
+    if (!extensionReady) throw new Error(t("missing"));
     const url = new URL(skill.bootstrapUrl, location.href);
     if (url.origin !== location.origin) throw new Error(t("sameOrigin"));
-    await navigator.clipboard.writeText(url.href);
-    showNotice(t("copiedBootstrap"), false);
-  } catch {
-    showNotice(t("copyFailed"), true);
+    if (!/^[a-f0-9]{64}$/.test(skill.bootstrapPackageHash)) throw new Error("Invalid Store package hash.");
+    button.disabled = true;
+    button.textContent = t("verifyingBootstrap");
+    const response = await rpc("verify-bootstrap", skill.id, {
+      bootstrap: {
+        id: skill.id,
+        version: skill.version,
+        bootstrapUrl: url.href,
+        packageHash: skill.bootstrapPackageHash
+      }
+    }, 30_000);
+    if (!response?.ok) throw new Error(response?.error || "Extension verification failed.");
+    showNotice(t("copiedBootstrap", {
+      version: response.version,
+      hash: response.packageHashPrefix
+    }), false);
+  } catch (error) {
+    showNotice(t("copyFailed", { error: error.message }), true);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
   }
 }
 
