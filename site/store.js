@@ -20,7 +20,7 @@ const messages = {
     installedStatus: "已安裝；可重新生成更新。", availableStatus: "由你的 LLM 即時生成後安裝。", viewSource: "查看 Skill 內容", sourceHint: "展開後載入人類可讀的 Skill 內容。", loadingSource: "正在載入 Skill 內容…",
     cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 會傳送 skill.json、人類可讀的 SKILL.md，以及只能阻擋、不能授權的受限 Developer Conformance。Builder 不會看到測試內容。", approveTitle: "核准安裝生成的 Build？",
     footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。", securityExample: "⚠ 惡意安全測試樣本：預期 Tester 拒絕，絕不應產生或安裝 Build。", testSecurity: "測試安全閘門",
-    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "展開閱讀內容後，讓 Extension 核對此版本、完整 package hash 與 protocol，再複製給本機 Agent。", copyBootstrap: "複製已驗證的 Bootstrap prompt", verifyingBootstrap: "Extension 正在重新下載並驗證 Bootstrap…", copiedBootstrap: "已由 Extension 驗證並複製 v{version}（{hash}…）。", copyFailed: "無法取得已驗證的 Bootstrap prompt：{error}"
+    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "展開閱讀內容後，讓 Extension 核對此版本、完整 package hash 與 protocol，再複製給本機 Agent。", copyBootstrap: "複製已驗證的 Bootstrap prompt", verifyingBootstrap: "Extension 正在重新下載並驗證 Bootstrap…", copiedBootstrapPopup: "已由 Extension 驗證並複製 v{version}（{hash}…）；Extension popup 已開啟。", copiedBootstrapBadge: "已由 Extension 驗證並複製 v{version}（{hash}…）；可點擊帶有 ✓ 的 Extension icon 查看確認。", copyFailed: "無法取得已驗證的 Bootstrap prompt：{error}"
   },
   en: {
     connecting: "Connecting to Extension…", ready: "Extension connected", missing: "MonkeySkill Extension not detected",
@@ -29,7 +29,7 @@ const messages = {
     installedStatus: "Installed; regenerate to update.", availableStatus: "Generated on demand by your LLM before installation.", viewSource: "View Skill content", sourceHint: "Expand to load the human-readable Skill content.", loadingSource: "Loading Skill content…",
     cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends skill.json, human-readable SKILL.md, and constrained Developer Conformance that may block but never authorize a build. Builder never sees its test content.", approveTitle: "Approve the generated Build?",
     footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content.", securityExample: "⚠ Malicious security sample: Tester must reject it; no Build should be generated or installed.", testSecurity: "Test security gate",
-    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "Read the content, then let the Extension verify this version, complete package hash, and protocol before copying it to your local agent.", copyBootstrap: "Copy verified Bootstrap prompt", verifyingBootstrap: "The Extension is downloading and verifying the Bootstrap…", copiedBootstrap: "Extension-verified v{version} copied ({hash}…).", copyFailed: "Unable to obtain a verified Bootstrap prompt: {error}"
+    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "Read the content, then let the Extension verify this version, complete package hash, and protocol before copying it to your local agent.", copyBootstrap: "Copy verified Bootstrap prompt", verifyingBootstrap: "The Extension is downloading and verifying the Bootstrap…", copiedBootstrapPopup: "Extension-verified v{version} copied ({hash}…); the Extension popup is open.", copiedBootstrapBadge: "Extension-verified v{version} copied ({hash}…); click the Extension icon marked ✓ to view the confirmation.", copyFailed: "Unable to obtain a verified Bootstrap prompt: {error}"
   }
 };
 let locale = localStorage.getItem("monkeyskill-store-locale")
@@ -312,7 +312,7 @@ async function copyVerifiedBootstrapPrompt(skill, button) {
       }
     }, 30_000);
     if (!response?.ok) throw new Error(response?.error || "Extension verification failed.");
-    showNotice(t("copiedBootstrap", {
+    showNotice(t(response.popupOpened ? "copiedBootstrapPopup" : "copiedBootstrapBadge", {
       version: response.version,
       hash: response.packageHashPrefix
     }), false);

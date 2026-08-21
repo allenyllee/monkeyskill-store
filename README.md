@@ -16,7 +16,9 @@ meta-conformance. The Store's **Copy verified Bootstrap prompt** button asks the
 to independently download every listed file, verify its bytes and SHA-256, recompute the package
 hash, and compare its version and protocol with the Extension's pinned POC policy. Only Extension
 code constructs and copies the prompt; this page receives success metadata but never the prompt
-body. A user can paste that verified prompt into a capable local agent. The agent
+body. Supported Chrome versions open the Extension popup with the verified version and hash prefix;
+otherwise the Extension icon carries a check badge until the user opens it. A user can paste that
+verified prompt into a capable local agent. The agent
 discovers the current operating environment, asks a fresh Builder to generate a minimal Runner,
 asks a fresh Tester to validate it without Builder reasoning, and atomically installs only the
 exact passing artifact in a user-scoped location. The Store publishes no Runner implementation or
