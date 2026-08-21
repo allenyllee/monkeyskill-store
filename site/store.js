@@ -11,6 +11,7 @@ const dialogDetails = document.querySelector("#dialog-details");
 const dialogConfirm = document.querySelector("#dialog-confirm");
 const pendingRequests = new Map();
 const instructionCache = new Map();
+const bootstrapPackageCache = new Map();
 const LOCAL_RUNTIME_CHANGE_KEY = "monkeyskill-local-runtime-change";
 const messages = {
   "zh-Hant": {
@@ -20,7 +21,8 @@ const messages = {
     installedStatus: "已安裝；可重新生成更新。", availableStatus: "由你的 LLM 即時生成後安裝。", viewSource: "查看 Skill 內容", sourceHint: "展開後載入人類可讀的 Skill 內容。", loadingSource: "正在載入 Skill 內容…",
     cancel: "取消", start: "是，開始生成", approve: "是，核准安裝", installTitle: "安裝 {name}？", installCopy: "Store 會傳送 skill.json、人類可讀的 SKILL.md，以及只能阻擋、不能授權的受限 Developer Conformance。Builder 不會看到測試內容。", approveTitle: "核准安裝生成的 Build？",
     footerGithub: "GitHub、投稿與 Fork", footerNote: "Store 不包含生成的 JavaScript。", sameOrigin: "Skill 內容必須來自相同來源。", loadSource: "無法載入 Skill 內容。", securityExample: "⚠ 惡意安全測試樣本：預期 Tester 拒絕，絕不應產生或安裝 Build。", testSecurity: "測試安全閘門",
-    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "展開閱讀內容後，讓 Extension 核對此版本、完整 package hash 與 protocol，再複製給本機 Agent。", copyBootstrap: "複製已驗證的 Bootstrap prompt", verifyingBootstrap: "Extension 正在重新下載並驗證 Bootstrap…", copiedBootstrapPopup: "已由 Extension 驗證並複製 v{version}（{hash}…）；Extension popup 已開啟。", copiedBootstrapBadge: "已由 Extension 驗證並複製 v{version}（{hash}…）；可點擊帶有 ✓ 的 Extension icon 查看確認。", copyFailed: "無法取得已驗證的 Bootstrap prompt：{error}"
+    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "下方預設展開人類可讀的 SKILL.md；套件中的每個文字檔、bytes 與 SHA-256 也可逐一檢視。", copyBootstrap: "複製已驗證的 Bootstrap prompt", verifyingBootstrap: "Extension 正在重新下載並驗證 Bootstrap…", copiedBootstrapPopup: "已由 Extension 驗證並複製 v{version}（{hash}…）；Extension popup 已開啟。", copiedBootstrapBadge: "已由 Extension 驗證並複製 v{version}（{hash}…）；可點擊帶有 ✓ 的 Extension icon 查看確認。", copyFailed: "無法取得已驗證的 Bootstrap prompt：{error}",
+    packageContents: "套件內容（{count} 個檔案）", loadingPackage: "正在載入 bootstrap.json 與套件文字檔…", packageLoadFailed: "無法顯示 Bootstrap 套件：{error}", rawBootstrap: "原始 bootstrap.json", entrypoint: "Entrypoint", workflow: "Workflow", protocol: "Protocol", packageHash: "完整 package hash", unverifiedPackage: "尚未由 Extension 驗證。網頁顯示僅供閱讀，不代表可信。", verifiedPackage: "Extension 已驗證：{count}/{count} 個檔案 · {bytes} bytes", fileBytes: "{bytes} bytes"
   },
   en: {
     connecting: "Connecting to Extension…", ready: "Extension connected", missing: "MonkeySkill Extension not detected",
@@ -29,7 +31,8 @@ const messages = {
     installedStatus: "Installed; regenerate to update.", availableStatus: "Generated on demand by your LLM before installation.", viewSource: "View Skill content", sourceHint: "Expand to load the human-readable Skill content.", loadingSource: "Loading Skill content…",
     cancel: "Cancel", start: "Yes, start generation", approve: "Yes, approve installation", installTitle: "Install {name}?", installCopy: "The Store sends skill.json, human-readable SKILL.md, and constrained Developer Conformance that may block but never authorize a build. Builder never sees its test content.", approveTitle: "Approve the generated Build?",
     footerGithub: "GitHub, contribute, and fork", footerNote: "The Store contains no generated JavaScript.", sameOrigin: "Skill content must come from the same origin.", loadSource: "Unable to load Skill content.", securityExample: "⚠ Malicious security sample: Tester must reject it; no Build should be generated or installed.", testSecurity: "Test security gate",
-    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "Read the content, then let the Extension verify this version, complete package hash, and protocol before copying it to your local agent.", copyBootstrap: "Copy verified Bootstrap prompt", verifyingBootstrap: "The Extension is downloading and verifying the Bootstrap…", copiedBootstrapPopup: "Extension-verified v{version} copied ({hash}…); the Extension popup is open.", copiedBootstrapBadge: "Extension-verified v{version} copied ({hash}…); click the Extension icon marked ✓ to view the confirmation.", copyFailed: "Unable to obtain a verified Bootstrap prompt: {error}"
+    runnerBootstrap: "Runner Bootstrap", bootstrapStatus: "The human-readable SKILL.md is open below by default; every package text file, byte count, and SHA-256 can also be inspected.", copyBootstrap: "Copy verified Bootstrap prompt", verifyingBootstrap: "The Extension is downloading and verifying the Bootstrap…", copiedBootstrapPopup: "Extension-verified v{version} copied ({hash}…); the Extension popup is open.", copiedBootstrapBadge: "Extension-verified v{version} copied ({hash}…); click the Extension icon marked ✓ to view the confirmation.", copyFailed: "Unable to obtain a verified Bootstrap prompt: {error}",
+    packageContents: "Package contents ({count} files)", loadingPackage: "Loading bootstrap.json and package text files…", packageLoadFailed: "Unable to display the Bootstrap package: {error}", rawBootstrap: "Raw bootstrap.json", entrypoint: "Entrypoint", workflow: "Workflow", protocol: "Protocol", packageHash: "Complete package hash", unverifiedPackage: "Not yet verified by the Extension. The webpage display is readable evidence, not a trust decision.", verifiedPackage: "Extension verified: {count}/{count} files · {bytes} bytes", fileBytes: "{bytes} bytes"
   }
 };
 let locale = localStorage.getItem("monkeyskill-store-locale")
@@ -238,6 +241,14 @@ function renderCatalog() {
       copyBootstrap.hidden = false;
       copyBootstrap.textContent = t("copyBootstrap");
       copyBootstrap.addEventListener("click", () => copyVerifiedBootstrapPrompt(skill, copyBootstrap));
+      const packageSection = card.querySelector(".bootstrap-package");
+      const packageDetails = packageSection.querySelector(".bootstrap-package-details");
+      packageSection.hidden = false;
+      packageSection.querySelector(".bootstrap-verification").textContent = t("unverifiedPackage");
+      packageDetails.querySelector(":scope > summary").textContent = t("packageContents", { count: "…" });
+      packageDetails.addEventListener("toggle", () => {
+        if (packageDetails.open) void revealBootstrapPackage(skill, packageDetails);
+      });
     }
     const demo = card.querySelector(".demo");
     demo.textContent = t("demo");
@@ -257,7 +268,129 @@ function renderCatalog() {
       if (source.open) void revealSkillSource(skill, source);
     });
     catalog.append(card);
+    if (isBootstrap) {
+      source.open = true;
+      void revealSkillSource(skill, source);
+    }
   }
+}
+
+async function revealBootstrapPackage(skill, container) {
+  const status = container.querySelector(".bootstrap-package-status");
+  if (container.dataset.loaded === "true") return;
+  status.textContent = t("loadingPackage");
+  status.classList.remove("error");
+  try {
+    let pkg = bootstrapPackageCache.get(skill.bootstrapUrl);
+    if (!pkg) {
+      pkg = await loadReadableBootstrapPackage(skill);
+      bootstrapPackageCache.set(skill.bootstrapUrl, pkg);
+    }
+    renderBootstrapPackage(container, pkg);
+    container.dataset.loaded = "true";
+    status.hidden = true;
+  } catch (error) {
+    status.textContent = t("packageLoadFailed", { error: error.message });
+    status.classList.add("error");
+  }
+}
+
+async function loadReadableBootstrapPackage(skill) {
+  const bootstrapUrl = new URL(skill.bootstrapUrl, location.href);
+  if (bootstrapUrl.origin !== location.origin) throw new Error(t("sameOrigin"));
+  const response = await fetch(bootstrapUrl, { cache: "no-store", credentials: "omit", redirect: "error" });
+  if (!response.ok) throw new Error(`bootstrap.json HTTP ${response.status}`);
+  const rawBootstrap = await response.text();
+  const manifest = JSON.parse(rawBootstrap);
+  if (!manifest || manifest.schemaVersion !== 1 || !Array.isArray(manifest.files)
+    || manifest.files.length < 1 || manifest.files.length > 32) throw new Error("Unsupported bootstrap manifest.");
+  if (!/^[a-f0-9]{64}$/.test(manifest.packageHash)) throw new Error("Invalid package hash.");
+  let totalBytes = 0;
+  const files = [];
+  for (const file of manifest.files) {
+    if (!file || typeof file.path !== "string" || !/^[A-Za-z0-9._/-]+$/.test(file.path)
+      || file.path.split("/").includes("..") || !/^[a-f0-9]{64}$/.test(file.sha256)
+      || !Number.isInteger(file.bytes) || file.bytes < 0 || file.bytes > 200_000) {
+      throw new Error("Invalid package file descriptor.");
+    }
+    totalBytes += file.bytes;
+    if (totalBytes > 1_000_000) throw new Error("Bootstrap package is too large to display.");
+    const fileUrl = new URL(file.path, bootstrapUrl);
+    if (fileUrl.origin !== location.origin || !fileUrl.pathname.startsWith(bootstrapUrl.pathname.replace(/bootstrap\.json$/, ""))) {
+      throw new Error("Package file escaped its version directory.");
+    }
+    const fileResponse = await fetch(fileUrl, { cache: "no-store", credentials: "omit", redirect: "error" });
+    if (!fileResponse.ok) throw new Error(`${file.path} HTTP ${fileResponse.status}`);
+    const bytes = new Uint8Array(await fileResponse.arrayBuffer());
+    if (bytes.byteLength !== file.bytes) throw new Error(`${file.path} byte length changed.`);
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    files.push({ ...file, text });
+  }
+  const profileFile = files.find(file => file.path === "protocol/host-dsl-profile.json");
+  const protocol = profileFile ? JSON.parse(profileFile.text) : null;
+  return { manifest, rawBootstrap, files, protocol };
+}
+
+function renderBootstrapPackage(container, pkg) {
+  container.querySelector(":scope > summary").textContent = t("packageContents", { count: pkg.files.length });
+  const metadata = container.querySelector(".bootstrap-package-metadata");
+  metadata.replaceChildren();
+  for (const [label, value] of [
+    [t("entrypoint"), pkg.manifest.entrypoint],
+    [t("workflow"), pkg.manifest.workflow],
+    [t("protocol"), pkg.protocol ? `schema ${pkg.protocol.schemaVersion} · ${pkg.protocol.profile}` : "—"],
+    [t("packageHash"), pkg.manifest.packageHash]
+  ]) {
+    const term = document.createElement("dt");
+    const description = document.createElement("dd");
+    term.textContent = label;
+    description.textContent = String(value ?? "—");
+    metadata.append(term, description);
+  }
+  metadata.hidden = false;
+  const raw = container.querySelector(".bootstrap-raw");
+  raw.querySelector("summary").textContent = t("rawBootstrap");
+  raw.querySelector("pre").textContent = pkg.rawBootstrap;
+  raw.hidden = false;
+  const fileList = container.querySelector(".bootstrap-files");
+  fileList.replaceChildren();
+  for (const file of pkg.files) {
+    const details = document.createElement("details");
+    details.className = "bootstrap-file";
+    const summary = document.createElement("summary");
+    const path = document.createElement("strong");
+    const size = document.createElement("span");
+    const hash = document.createElement("code");
+    const content = document.createElement("pre");
+    path.textContent = file.path;
+    size.textContent = t("fileBytes", { bytes: file.bytes.toLocaleString(locale) });
+    hash.textContent = file.sha256;
+    content.textContent = file.text;
+    content.tabIndex = 0;
+    summary.append(path, size);
+    details.append(summary, hash, content);
+    fileList.append(details);
+  }
+}
+
+function showVerifiedBootstrapPackage(skillId, response) {
+  if (!Number.isInteger(response.verifiedFileCount) || !Number.isInteger(response.verifiedByteCount)
+    || !/^[a-f0-9]{64}$/.test(response.packageHash) || typeof response.protocolProfile !== "string") return;
+  const card = [...catalog.querySelectorAll(".skill-card")].find(candidate => candidate.dataset.skillId === skillId);
+  const verification = card?.querySelector(".bootstrap-verification");
+  if (!verification) return;
+  verification.dataset.state = "verified";
+  verification.replaceChildren();
+  const summary = document.createElement("strong");
+  const hash = document.createElement("code");
+  const protocol = document.createElement("span");
+  summary.textContent = t("verifiedPackage", {
+    count: response.verifiedFileCount,
+    bytes: response.verifiedByteCount.toLocaleString(locale)
+  });
+  hash.textContent = response.packageHash;
+  protocol.textContent = `schema ${response.protocolSchemaVersion} · ${response.protocolProfile}`;
+  verification.append(summary, hash, protocol);
 }
 
 async function revealSkillSource(skill, container) {
@@ -312,6 +445,7 @@ async function copyVerifiedBootstrapPrompt(skill, button) {
       }
     }, 30_000);
     if (!response?.ok) throw new Error(response?.error || "Extension verification failed.");
+    showVerifiedBootstrapPackage(skill.id, response);
     showNotice(t(response.popupOpened ? "copiedBootstrapPopup" : "copiedBootstrapBadge", {
       version: response.version,
       hash: response.packageHashPrefix

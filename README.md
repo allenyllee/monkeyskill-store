@@ -30,6 +30,13 @@ invoked by the authenticated local host as a bounded child process: one JSON req
 JSON response on stdout, diagnostics on stderr. This keeps the same evidence envelope usable for
 future browser and desktop MSkills while allowing the generated provider to be replaced.
 
+The Runner Bootstrap card is also a transparent package viewer. Its human-readable `SKILL.md`
+is open by default, and the package panel exposes the raw `bootstrap.json`, entrypoint, workflow,
+protocol schema/profile, complete package hash, and every listed text file with its byte count and
+SHA-256. This Store-rendered view is for human inspection only. The “verified” state is shown only
+after the installed Extension independently downloads the same package, validates every file and
+the pinned protocol, and returns the verified file/byte counts and full package hash.
+
 The Store and its published functional Demo share Traditional Chinese and English locale routing.
 Demo links carry the Store's current locale; a directly opened Demo falls back to the browser
 language and also provides its own language switch without using persistent browser storage.

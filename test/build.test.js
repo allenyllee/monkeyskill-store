@@ -101,6 +101,14 @@ test("Store publishes an immutable hashed Runner Bootstrap package", async () =>
   assert.match(source, /copyVerifiedBootstrapPrompt/);
   assert.match(source, /rpc\("verify-bootstrap"/);
   assert.match(source, /bootstrapPackageHash/);
+  assert.match(source, /loadReadableBootstrapPackage/);
+  assert.match(source, /renderBootstrapPackage/);
+  assert.match(source, /rawBootstrap/);
+  assert.match(source, /file\.sha256/);
+  assert.match(source, /verifiedFileCount/);
+  assert.match(source, /verifiedByteCount/);
+  assert.match(source, /response\.packageHash/);
+  assert.match(source, /response\.protocolProfile/);
   assert.doesNotMatch(source, /navigator\.clipboard\.writeText/);
 });
 
@@ -259,6 +267,26 @@ test("Store cards can safely expand their human-readable Skill content", async (
   assert.match(source, /content\.textContent = instructions/);
   assert.match(source, /instructionCache/);
   assert.match(styles, /\.skill-source-content/);
+});
+
+test("Runner Bootstrap card exposes readable package contents while reserving trust for the Extension", async () => {
+  const source = await readFile(new URL("../site/store.js", import.meta.url), "utf8");
+  const page = await readFile(new URL("../site/index.html", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../site/store.css", import.meta.url), "utf8");
+  assert.match(page, /class="bootstrap-package"/);
+  assert.match(page, /class="bootstrap-package-details"/);
+  assert.match(page, /class="bootstrap-raw"/);
+  assert.match(source, /source\.open = true/);
+  assert.match(source, /credentials: "omit", redirect: "error"/);
+  assert.match(source, /new TextDecoder\("utf-8", \{ fatal: true \}\)/);
+  assert.match(source, /description\.textContent/);
+  assert.match(source, /content\.textContent = file\.text/);
+  assert.match(source, /verification\.dataset\.state = "verified"/);
+  assert.match(source, /response\.verifiedFileCount/);
+  assert.match(source, /response\.packageHash/);
+  assert.doesNotMatch(source, /innerHTML/);
+  assert.match(styles, /\.bootstrap-package-metadata/);
+  assert.match(styles, /\.bootstrap-file/);
 });
 
 test("Store documents evidence-driven MSkill development", async () => {
